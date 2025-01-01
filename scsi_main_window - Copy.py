@@ -19,7 +19,10 @@ half_screensize_y = int(screensize[1] / 2)
 #From the center of the screen
 #Adding more offset to desired location for text reading
 x_offset = ( region_width / 2 )
-y_offset = ( region_height / 2 ) + 190
+#y_offset = ( region_height / 2 ) + 173   #works for drake cutlass only
+y_offset = ( region_height / 2 ) + 190 #works for drake cutlass only
+#y_offset = ( region_height / 2 ) + 240 #works for drake cutlass only
+#y_offset = ( region_height / 2 ) + 225 #works for anvil arrow only
 
 #Sets the desired location incorporating the offset
 desired_location_x = int(half_screensize_x - x_offset )
@@ -31,14 +34,23 @@ region = ( desired_location_x,desired_location_y,region_width,region_height ) # 
 screenshot = pyautogui.screenshot(region=region)
 
 #Save or analyze the screenshot
-screenshot.save("G:\My Drive\_Projects\Python\StarCitizen_ScanIdentifier\captured_area.png")
+screenshot.save("G:\My Drive\_Projects\Python\StarCitizen_ScanIdentifier\_captured_area.png")
 
 #------ANALYZE THE IMAGE CONTENT
 from pytesseract import image_to_string
 from PIL import Image
+import io
 
 # Load the screenshot
-screenshot = Image.open ("G:\My Drive\_Projects\Python\StarCitizen_ScanIdentifier\captured_area.png")
+screenshot = Image.open("G:\My Drive\_Projects\Python\StarCitizen_ScanIdentifier\_captured_area.png")
+
+#screenshot = screenshot.resize([screenshot.width* 2, screenshot.height * 2])
+
+screenshot.save("G:\My Drive\_Projects\Python\StarCitizen_ScanIdentifier\_captured_area.png")
+
+inverted_image = Image.eval(screenshot, lambda x: 255 - x)
+inverted_image.save("G:\My Drive\_Projects\Python\StarCitizen_ScanIdentifier\_inverted_captured_area.png")
+
 text = image_to_string(screenshot)
 
 #remove first letter since the icon is mistaken for a 2
@@ -47,21 +59,19 @@ screen_text_found = text[1:]
 
 #-------------------------------------------------------------------------DEBUGGING
 # Point 1: Move to starting point
-##pyautogui.moveTo( region[0],region[1], 0.1 )
+pyautogui.moveTo( region[0],region[1], 0.5 )
 
 # Point 2: Add the width to the starting point X to get to the second point
-##pyautogui.moveTo( region[0] + region[2], region[1], 0.1) 
+pyautogui.moveTo( region[0] + region[2], region[1], 0.5) 
 
 # Point 3: Add the height to the starting point Y to get to the third point
-##pyautogui.moveTo(None, region[1] + region[3], 0.1)
+pyautogui.moveTo(None, region[1] + region[3], 0.5)
 
 # Point 4: Move to starting point X but keep the height of the third point
-##pyautogui.moveTo( region[0],region[1] + region[3], 0.1 )
+pyautogui.moveTo( region[0],region[1] + region[3], 0.5 )
 
 # Point 5: Move back to starting point
-##pyautogui.moveTo( region[0],region[1], 0.1 )
-
-#pyautogui.alert(text='HEY HEY HEY', title='THIS ROCK BE THE SHIT YO', button='OK')
+pyautogui.moveTo( region[0],region[1], 0.5 )
 #-------------------------------------------------------------------------DEBUGGING
 
 #Compare scanned text with information on sheet
@@ -146,12 +156,12 @@ def show_popup(title_text, message_text):
     # Create a title label to display the message
     title_label = QLabel(title_text, window)
     title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    title_label.setStyleSheet("font-size: 24px; padding: 10px;")
+    title_label.setStyleSheet("font-size: 14px; padding: 0px;")
 
     # Create a message label to display the message
     message_label = QLabel(message_text, window)
     message_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    message_label.setStyleSheet("font-size: 14px; padding: 10px;")
+    message_label.setStyleSheet("font-size: 21px; padding: 0px;")
 
     # Create a "Dismiss" button to close the pop-up
     dismiss_button = QPushButton("Dismiss", window)
