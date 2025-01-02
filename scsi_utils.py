@@ -1,6 +1,8 @@
 import gspread
 from google.oauth2.service_account import Credentials
 
+RECTANGLE_BOUNDS_FILE = "data/rectangle_bounds.json"
+
 def get_google_sheet_data(sheet_name, worksheet_name):
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
     service_account_file = load_json( "starcitizenscanidentifier-dd7bf0006208.json" )    
@@ -22,7 +24,7 @@ import pyautogui
 
 def get_region_size():
     #Need this to be dynamic based on screen resolution
-    region_width  = 200           #           0.078125 % of 2560
+    region_width  = 200           # 0.0781250000000000 % of 2560
     region_height = 40            # 0.0277777777777778 % of 1440
     region_height_offset = 190    # 0.1319444444444444 % of 1440
 
@@ -48,7 +50,7 @@ def get_region_size():
     #Sets the region we want to be screenshotted
     region = ( desired_location_x, desired_location_y, region_width,region_height ) # Adjust this based on your screen area || left, top, width, and height
 
-    debug_show_area_with_mouse( region )
+    #debug_show_area_with_mouse( region )
 
     return region
 
@@ -73,13 +75,42 @@ def debug_show_area_with_mouse( region,  speed = 0.5 ):
 import json
 import os
 
-# Handles loading JSON credentials file
+# Handles getting the JSON credentials file path
 def load_json(filename):
     # Get the path to the JSON file inside the 'resources' directory
-    file_path = os.path.join('resources', filename)
-
-    # Open the JSON file and load its contents
-#    with open(file_path, 'r') as file:
-#        data = json.load(file)
+    file_path = os.path.join('data', filename)
 
     return file_path #data
+
+def load_rectangle_bounds():
+    """
+    Load the saved rectangle bounds from the file.
+    :return: A tuple (left, top, width, height) or None if no bounds are saved
+    """
+    try:
+        with open(RECTANGLE_BOUNDS_FILE, "r") as file:
+            bounds_data = json.load(file)
+            return (bounds_data["x"], bounds_data["y"], bounds_data["width"], bounds_data["height"])
+    except FileNotFoundError:
+        return None  # Return None if no saved bounds exist
+
+import re
+
+def remove_non_numeric(value):
+    # Use regular expression to keep only digits
+    return ''.join(re.findall(r'\d', value))
+
+def format_number_with_comma(value):
+    try:
+        # Try converting to an integer
+        number = int(value.replace(",", ""))  # Remove commas if present
+        return "{:,}".format(number)
+    except ValueError:
+        # Handle the case where the value is not a valid number
+        return "Invalid number"
+    
+def clean_input_text(value):
+    value = value.strip() #strip spaces
+    value = remove_non_numeric(value)
+    value = format_number_with_comma(value)    
+    return value
