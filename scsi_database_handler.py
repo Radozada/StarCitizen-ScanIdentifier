@@ -21,3 +21,17 @@ conn.commit()
 conn.close()
 
 print("Database and table created successfully!")
+
+def is_divisible(dividend, divisor):
+    if divisor == 0:
+        return "Cannot divide by zero"
+    return dividend % divisor == 0
+
+# Example usage
+number = 10
+divisor = 2
+
+if is_divisible(number, divisor):
+    print(f"{divisor} divides {number} evenly!")
+else:
+    print(f"{divisor} does not divide {number} evenly.")
