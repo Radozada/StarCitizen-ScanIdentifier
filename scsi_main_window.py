@@ -12,6 +12,7 @@ HISTORY_FILE = "data/scan_history.json"
 DATABASE_FILE = "data/scsi_database.db"
 GROUND_MINERALS_TABLE_NAME = "GROUND_MINERALS"
 ASTEROIDS_TABLE_NAME = "ASTEROID_TYPES"
+SCREENSHOT_PATH = "data/screenshot.png"
 WINDOW_ICON = "resources/scsi_tool.ico"
 
 class ScanWorker(QThread):
@@ -60,7 +61,7 @@ class ScanWindow(QWidget):
 
         # Screen region settings
         self.region = get_region_size()  # Adjust the region size
-        self.screenshot_path = "screenshot.png"
+        self.screenshot_path = SCREENSHOT_PATH
 
         # History
         self.history = []
@@ -157,7 +158,7 @@ class ScanWindow(QWidget):
         self.toggle_scan_area_button.setFixedWidth(25)
         self.toggle_scan_area_button.setStyleSheet("QPushButton { background-color: transparent; border: none;}")
         self.toggle_scan_area_button.setIcon(QIcon("resources/area_settings_icon_128.png"))
-        self.toggle_scan_area_button.setToolTip("Adjust scan area.")
+        self.toggle_scan_area_button.setToolTip("Move, or resize scan area.")
         self.toggle_scan_area_button.setCheckable(True)
         self.toggle_scan_area_button.clicked.connect(self.toggle_scan_area)
         
