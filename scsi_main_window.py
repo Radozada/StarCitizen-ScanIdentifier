@@ -161,7 +161,7 @@ class ScanWindow(QWidget):
         self.toggle_scan_area_button.setToolTip("Move, or resize scan area.")
         self.toggle_scan_area_button.setCheckable(True)
         self.toggle_scan_area_button.clicked.connect(self.toggle_scan_area)
-        
+
         toggle_scan_area_button_wrapper = QHBoxLayout()
         toggle_scan_area_button_wrapper.setAlignment(Qt.AlignmentFlag.AlignRight)
         toggle_scan_area_button_wrapper.addWidget(self.toggle_scan_area_button)
@@ -188,9 +188,9 @@ class ScanWindow(QWidget):
         result_groupbox.setStyleSheet("QGroupBox { font-size: 14px; }")
         result_layout = QVBoxLayout()
         
-        self.result_label = QLabel("Ready to go o7", self)
+        self.result_label = QLabel("Radio Signature Results will appear here", self)
         self.result_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.result_label.setStyleSheet("font-size: 14px; padding: 10px;")
+        self.result_label.setStyleSheet("font-size: 14px; padding: 10px; font: Arial")
         self.result_label.setWordWrap(True)
 
         result_layout.addWidget(self.result_label)
