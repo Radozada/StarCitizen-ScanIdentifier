@@ -1,7 +1,6 @@
 TODO
 
 IMPORTANT, URGENT
-- Add asteroid mining support
 - Package the app
 
 NOT IMPORTANT, NOT URGENT

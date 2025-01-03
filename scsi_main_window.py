@@ -1,5 +1,6 @@
 import sys
 import json
+import ctypes
 from PyQt6.QtWidgets import QApplication, QRadioButton, QLabel, QVBoxLayout, QPushButton, QWidget, QListWidget, QHBoxLayout, QLineEdit, QGroupBox, QGridLayout
 from PyQt6.QtGui import QMovie, QIcon
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
@@ -11,19 +12,17 @@ HISTORY_FILE = "data/scan_history.json"
 DATABASE_FILE = "data/scsi_database.db"
 GROUND_MINERALS_TABLE_NAME = "GROUND_MINERALS"
 ASTEROIDS_TABLE_NAME = "ASTEROID_TYPES"
+WINDOW_ICON = "resources/scsi_tool.ico"
 
 class ScanWorker(QThread):
     # Define custom signals for passing results back to the UI
     scan_finished = pyqtSignal(str, list)
 
-    def __init__(self, region, screenshot_path,
-                 sheet_name, worksheet_name, input_textbox,
+    def __init__(self, region, screenshot_path, input_textbox,
                  scanner_used, options_radio_button_ground_mining):
         super().__init__()
         self.region = region
         self.screenshot_path = screenshot_path
-        self.sheet_name = sheet_name
-        self.worksheet_name = worksheet_name
         self.input_textbox = input_textbox
         self.scanner_used = scanner_used
         self.options_radio_button_ground_mining = options_radio_button_ground_mining        
@@ -63,10 +62,6 @@ class ScanWindow(QWidget):
         self.region = get_region_size()  # Adjust the region size
         self.screenshot_path = "screenshot.png"
 
-        # Google Sheets settings
-        self.sheet_name = "Ground Mining Radar Reference"
-        self.worksheet_name = "RockDataWorksheet"
-
         # History
         self.history = []
 
@@ -84,9 +79,17 @@ class ScanWindow(QWidget):
 
     def init_ui(self):
         # Set up the window
-        self.setWindowTitle("Star Citizen Scan Identifier")
+        self.setWindowTitle("SC Scan ID")
+        self.setWindowIcon(QIcon(WINDOW_ICON))
         self.setGeometry(100, 100, 800, 500)  # Window size
         self.setFixedSize(800, 500)  # Fixed size window
+
+        #Dark Top Window Bar
+        hwnd = int(self.winId())
+        DWMWA_USE_IMMERSIVE_DARK_MODE = 20
+        ctypes.windll.dwmapi.DwmSetWindowAttribute(
+            hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ctypes.byref(ctypes.c_int(1)), ctypes.sizeof(ctypes.c_int)
+        )
 
         # Center the window
         screen = QApplication.primaryScreen().geometry()
@@ -270,9 +273,8 @@ class ScanWindow(QWidget):
 
     def start_scan_worker(self):
         # Create and start the worker thread
-        self.worker = ScanWorker(self.region, self.screenshot_path, self.sheet_name, 
-                                 self.worksheet_name, self.input_textbox, self.scanner_used, 
-                                 self.options_radio_button_ground_mining)
+        self.worker = ScanWorker(self.region, self.screenshot_path, self.input_textbox,
+                                 self.scanner_used, self.options_radio_button_ground_mining)
         self.worker.scan_finished.connect(self.handle_scan_finished)
         self.worker.finished.connect(self.cleanup_worker)  # Clean up when the thread finishes
         self.worker.start()

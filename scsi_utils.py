@@ -151,7 +151,7 @@ def format_new_results(scanned_text, matches):
     formatted_time = local_time.strftime("%H:%M:%S ")
 
     if matches:
-        formatted_matches = ' OR '.join([f"{header} ({result} Nodes)" for header, result in matches])
+        formatted_matches = ' OR '.join([f"{header} [{result} Nodes]" for header, result in matches])
         result_string = get_history_format(formatted_time, scanned_text, formatted_matches)
     else:
         formatted_matches = "No matches found."
