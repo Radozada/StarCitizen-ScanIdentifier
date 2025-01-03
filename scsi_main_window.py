@@ -218,8 +218,8 @@ class ScanWindow(QWidget):
         grid_layout.addWidget(options_groupbox,      0, 0, 1, 1)
         grid_layout.addWidget(input_groupbox,        1, 0, 1, 1)
         grid_layout.addWidget(scan_groupbox,         2, 0, 1, 1)
-        grid_layout.addWidget(result_groupbox,       0, 1, 1, 1)
-        grid_layout.addWidget(history_groupbox,      1, 1, 2, 1)        
+        grid_layout.addWidget(result_groupbox,       0, 1, 2, 1)
+        grid_layout.addWidget(history_groupbox,      2, 1, 1, 1)        
 
         self.setLayout(grid_layout)      
 
