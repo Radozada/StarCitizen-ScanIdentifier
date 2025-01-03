@@ -1,24 +1,4 @@
-import gspread
-from google.oauth2.service_account import Credentials
-
 RECTANGLE_BOUNDS_FILE = "data/rectangle_bounds.json"
-
-def get_google_sheet_data(sheet_name, worksheet_name):
-    SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
-    service_account_file = load_json( "starcitizenscanidentifier-dd7bf0006208.json" )    
-    credentials = Credentials.from_service_account_file(service_account_file, scopes=SCOPES)
-    client = gspread.authorize(credentials)
-    sheet = client.open(sheet_name).worksheet(worksheet_name)
-    data = sheet.get_all_values()
-    return data[0], data[1:]
-
-def find_all_headers_for_value(value, header, rows):
-    headers = []
-    for row in rows:
-        for col_index, cell in enumerate(row):
-            if cell == value:
-                headers.append(header[col_index])
-    return headers
 
 import pyautogui
 
@@ -100,11 +80,11 @@ def remove_non_numeric(value):
     # Use regular expression to keep only digits
     return ''.join(re.findall(r'\d', value))
 
-def format_number_with_comma(value):
+def format_number_remove_comma(value):
     try:
         # Try converting to an integer
         number = int(value.replace(",", ""))  # Remove commas if present
-        return "{:,}".format(number)
+        return str(number)
     except ValueError:
         # Handle the case where the value is not a valid number
         return "Invalid number"
@@ -112,5 +92,73 @@ def format_number_with_comma(value):
 def clean_input_text(value):
     value = value.strip() #strip spaces
     value = remove_non_numeric(value)
-    value = format_number_with_comma(value)    
+    value = format_number_remove_comma(value)    
     return value
+
+def check_table_values( s_table ):
+    print(s_table)
+
+
+import sqlite3
+
+def find_matching_headers(database_file, table_name, value):
+    results = []
+    conn = None  # Initialize conn to None
+    try:
+        # Convert value to integer if needed
+        value = int(value)
+
+        # Connect to the SQLite database
+        conn = sqlite3.connect(database_file)
+        cursor = conn.cursor()
+
+        # Get the column headers
+        cursor.execute(f"PRAGMA table_info('{table_name}')")
+        columns = [column[1] for column in cursor.fetchall()]
+
+        # Get the first row of the table
+        cursor.execute(f"SELECT * FROM '{table_name}' LIMIT 1")
+        first_row = cursor.fetchone()
+
+        if not first_row:
+            raise ValueError("The table is empty or does not exist.")
+
+        # Check divisibility for each column
+        for header, first_value in zip(columns, first_row):
+            if isinstance(first_value, (int, float)) and first_value != 0 and value % first_value == 0:
+                result = value // first_value
+                results.append((str(header), str(result)))
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+    except ValueError as e:
+        print(f"Value Error: {e}")
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        if conn:
+            conn.close()
+
+    return results
+
+from datetime import datetime
+
+def format_new_results(scanned_text, matches):    
+    # Get the current datetime object
+    local_time = datetime.now()
+
+    # Format the datetime object as a string
+    formatted_time = local_time.strftime("%H:%M:%S ")
+
+    if matches:
+        formatted_matches = ' OR '.join([f"{header} ({result} Nodes)" for header, result in matches])
+        result_string = get_history_format(formatted_time, scanned_text, formatted_matches)
+    else:
+        formatted_matches = "No matches found."
+        result_string = "Did not find any results."
+
+    return [result_string, formatted_time, scanned_text, formatted_matches]
+
+def get_history_format(formatted_time,scanned_text, formatted_matches ):
+    history_format_string = f"{formatted_time} Search: '{scanned_text}' | Signature: {formatted_matches}"
+    return history_format_string

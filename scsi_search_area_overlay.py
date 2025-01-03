@@ -3,6 +3,8 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout,
 from PyQt6.QtGui import QPainter, QPen, QBrush, QColor
 from PyQt6.QtCore import Qt, QRect, QPoint
 
+BOUNDS_OVERLAY_FILE = "data/rectangle_bounds.json"
+
 class OverlayRectangle(QMainWindow):
     def __init__(self, x, y, width, height):
         super().__init__()
@@ -23,7 +25,7 @@ class OverlayRectangle(QMainWindow):
         self.min_height = 50
 
         # File to save the rectangle bounds
-        self.bounds_file = "rectangle_bounds.json"
+        self.bounds_file = BOUNDS_OVERLAY_FILE
         self.load_bounds()  # Load saved bounds if available
 
     def paintEvent(self, event):

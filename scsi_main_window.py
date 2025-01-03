@@ -1,20 +1,24 @@
 import sys
 import json
-from datetime import datetime
-from PyQt6.QtWidgets import QApplication, QLabel, QVBoxLayout, QPushButton, QWidget, QListWidget, QHBoxLayout, QLineEdit, QGroupBox, QGridLayout
-from PyQt6.QtGui import QMovie, QPalette, QIcon
+from PyQt6.QtWidgets import QApplication, QRadioButton, QLabel, QVBoxLayout, QPushButton, QWidget, QListWidget, QHBoxLayout, QLineEdit, QGroupBox, QGridLayout
+from PyQt6.QtGui import QMovie, QIcon
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from scsi_ocr_scanner import capture_screen, process_image
-from scsi_utils import get_google_sheet_data, find_all_headers_for_value, get_region_size, load_rectangle_bounds, clean_input_text
+from scsi_utils import get_region_size, load_rectangle_bounds, clean_input_text, find_matching_headers, format_new_results, get_history_format
 from scsi_search_area_overlay import OverlayRectangle
 
 HISTORY_FILE = "data/scan_history.json"
+DATABASE_FILE = "data/scsi_database.db"
+GROUND_MINERALS_TABLE_NAME = "GROUND_MINERALS"
+ASTEROIDS_TABLE_NAME = "ASTEROID_TYPES"
 
 class ScanWorker(QThread):
     # Define custom signals for passing results back to the UI
     scan_finished = pyqtSignal(str, list)
 
-    def __init__(self, region, screenshot_path, sheet_name, worksheet_name, input_textbox, scanner_used):
+    def __init__(self, region, screenshot_path,
+                 sheet_name, worksheet_name, input_textbox,
+                 scanner_used, options_radio_button_ground_mining):
         super().__init__()
         self.region = region
         self.screenshot_path = screenshot_path
@@ -22,6 +26,7 @@ class ScanWorker(QThread):
         self.worksheet_name = worksheet_name
         self.input_textbox = input_textbox
         self.scanner_used = scanner_used
+        self.options_radio_button_ground_mining = options_radio_button_ground_mining        
         
          # Load the rectangle bounds from the saved file
         self.region = load_rectangle_bounds()
@@ -35,21 +40,20 @@ class ScanWorker(QThread):
             scanned_text = process_image(captured_path)
         else:
             scanned_text = self.input_textbox.text()
-            
+
+        #Clean text from anything but numbers 
         scanned_text = clean_input_text(scanned_text)
 
-        # Perform the scan logic here (runs in a separate thread)
-        #captured_path = capture_screen(self.region, self.screenshot_path)
-        #scanned_text = process_image(captured_path)
-
-        # Fetch data from Google Sheets
-        header, rows = get_google_sheet_data(self.sheet_name, self.worksheet_name)
-
-        # Find matching headers
-        headers = find_all_headers_for_value(scanned_text, header, rows)
+        #SET THE TABLE TO USE BASED ON A TOGGLE ON THE UI        
+        if self.options_radio_button_ground_mining.isChecked():
+            TABLE_NAME = GROUND_MINERALS_TABLE_NAME
+        else:
+            TABLE_NAME = ASTEROIDS_TABLE_NAME
+       
+        matches = find_matching_headers( DATABASE_FILE, TABLE_NAME, scanned_text)  
 
         # Emit the results when finished
-        self.scan_finished.emit(scanned_text, headers)
+        self.scan_finished.emit(scanned_text, matches)
 
 class ScanWindow(QWidget):
     def __init__(self):
@@ -94,10 +98,23 @@ class ScanWindow(QWidget):
         self.scanner_used = False
 
         # Grid Layout
-        grid_layout = QGridLayout()
+        grid_layout = QGridLayout()               
+
+        # OPTIONS SECTION
+        options_groupbox = QGroupBox("Options", self)
+        options_groupbox.setStyleSheet("QGroupBox { font-size: 14px; }")
+        options_layout = QVBoxLayout()
+        
+        self.options_radio_button_ground_mining = QRadioButton("Ground Mining")
+        self.options_radio_button_ground_mining.setChecked(True)
+        self.options_radio_button_asteroid_mining = QRadioButton("Asteroid Mining")
+
+        options_layout.addWidget(self.options_radio_button_ground_mining)
+        options_layout.addWidget(self.options_radio_button_asteroid_mining)
+        options_groupbox.setLayout(options_layout)
 
         # INPUT SECTION
-        input_groupbox = QGroupBox("Search manually ", self)
+        input_groupbox = QGroupBox("Search", self)
         input_groupbox.setStyleSheet("QGroupBox {font-size: 14px; }")
         input_layout = QVBoxLayout()
 
@@ -136,7 +153,7 @@ class ScanWindow(QWidget):
         self.toggle_scan_area_button = QPushButton("", self)
         self.toggle_scan_area_button.setFixedWidth(25)
         self.toggle_scan_area_button.setStyleSheet("QPushButton { background-color: transparent; border: none;}")
-        self.toggle_scan_area_button.setIcon(QIcon("resources/area_settings_icon_128x128.png"))
+        self.toggle_scan_area_button.setIcon(QIcon("resources/area_settings_icon_128.png"))
         self.toggle_scan_area_button.setToolTip("Adjust scan area.")
         self.toggle_scan_area_button.setCheckable(True)
         self.toggle_scan_area_button.clicked.connect(self.toggle_scan_area)
@@ -170,6 +187,7 @@ class ScanWindow(QWidget):
         self.result_label = QLabel("Ready to go o7", self)
         self.result_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.result_label.setStyleSheet("font-size: 14px; padding: 10px;")
+        self.result_label.setWordWrap(True)
 
         result_layout.addWidget(self.result_label)
         result_groupbox.setLayout(result_layout)
@@ -190,25 +208,25 @@ class ScanWindow(QWidget):
         # History List
         self.history_list = QListWidget(self)
         self.history_list.setAlternatingRowColors(True)
+        self.history_list.setWordWrap(True)
 
         #history_layout.addLayout(history_title_section_layout)
         history_layout.addWidget(self.history_list)
         history_groupbox.setLayout(history_layout)
 
         # Add all sections to the grid layout
-        grid_layout.addWidget(input_groupbox,        0, 0, 1, 1)
-        grid_layout.addWidget(scan_groupbox,         1, 0, 2, 1)
+        grid_layout.addWidget(options_groupbox,      0, 0, 1, 1)
+        grid_layout.addWidget(input_groupbox,        1, 0, 1, 1)
+        grid_layout.addWidget(scan_groupbox,         2, 0, 1, 1)
         grid_layout.addWidget(result_groupbox,       0, 1, 1, 1)
-        grid_layout.addWidget(history_groupbox,      1, 1, 2, 1)
+        grid_layout.addWidget(history_groupbox,      1, 1, 2, 1)        
 
         self.setLayout(grid_layout)      
 
     def on_text_changed(self, text):
         if text:
-            print(f"{text}")
             self.input_search_button.setEnabled(True)
         else:
-            print(f"{text}")
             self.input_search_button.setEnabled(False)
 
     def start_search(self):
@@ -232,12 +250,12 @@ class ScanWindow(QWidget):
             # Create and show the rectangle
             self.overlay_rectangle = OverlayRectangle( loc_x, loc_y, width, height )
             self.overlay_rectangle.show()
-            self.toggle_scan_area_button.setIcon(QIcon("resources/area_settings_active_icon_128x128.png"))
+            self.toggle_scan_area_button.setIcon(QIcon("resources/area_settings_active_icon_128.png"))
         else:
              # If the rectangle already exists, toggle it off
             self.overlay_rectangle.close()
             self.overlay_rectangle = None            
-            self.toggle_scan_area_button.setIcon(QIcon("resources/area_settings_icon_128x128.png"))
+            self.toggle_scan_area_button.setIcon(QIcon("resources/area_settings_icon_128.png"))
 
     def start_scan(self):
         # Disable the scan buttons during the scan
@@ -252,33 +270,28 @@ class ScanWindow(QWidget):
 
     def start_scan_worker(self):
         # Create and start the worker thread
-        self.worker = ScanWorker(self.region, self.screenshot_path, self.sheet_name, self.worksheet_name, self.input_textbox, self.scanner_used)
+        self.worker = ScanWorker(self.region, self.screenshot_path, self.sheet_name, 
+                                 self.worksheet_name, self.input_textbox, self.scanner_used, 
+                                 self.options_radio_button_ground_mining)
         self.worker.scan_finished.connect(self.handle_scan_finished)
         self.worker.finished.connect(self.cleanup_worker)  # Clean up when the thread finishes
         self.worker.start()
 
-    def handle_scan_finished(self, scanned_text, headers):
+    def handle_scan_finished(self, scanned_text, matches):
+
+        results = format_new_results(scanned_text,matches)
+
         # Display results
-        if headers:
-            result = f"SEARCHED: {scanned_text} | FOUND: {', '.join(headers)}"
-        else:
-            result = "Did not find any results."
-
-        self.result_label.setText(result)
-
-        # Get the current datetime object
-        local_time = datetime.now()
-
-        # Format the datetime object as a string
-        formatted_time = local_time.strftime("%H:%M:%S:")
+        self.result_label.setText(results[0])
 
         # Add to history
-        self.add_to_history(formatted_time, scanned_text, headers)
+        self.add_to_history(results[1], results[2], results[3])
 
         if self.scanner_used:
-            # Update the status to "finished"
+            # Update the status to "ready" only when the scanner was used
             self.update_status_image("ready")
 
+        # Reenable the input box only if there is text inside
         if self.input_textbox.text():
             self.input_search_button.setEnabled(True)
             self.input_search_button.setText("Search")
@@ -294,17 +307,17 @@ class ScanWindow(QWidget):
             self.worker.wait()  # Wait for it to finish
             self.worker = None  # Clear the reference to the thread
 
-    def add_to_history(self, formatted_time, scanned_text, headers):
+    def add_to_history(self, formatted_time, scanned_text, matches):        
         # Create entry
         entry = {
             "time": formatted_time,
             "scanned_text": scanned_text,
-            "headers": headers,
+            "matches": matches,
         }
 
         # Update history
         self.history.append(entry)
-        self.history_list.addItem(f"{formatted_time} SEARCHED: {scanned_text} | FOUND: {', '.join(headers) if headers else 'No match found'}")
+        self.history_list.addItem(get_history_format(formatted_time, scanned_text, matches))
         self.history_list.scrollToBottom()
 
         # Save history to file
@@ -317,11 +330,13 @@ class ScanWindow(QWidget):
                 for entry in self.history:
                     formatted_time = entry["time"]
                     scanned_text = entry["scanned_text"]
-                    headers = entry["headers"]
-                    self.history_list.addItem(f"{formatted_time} SEARCHED: {scanned_text} | {', '.join(headers) if headers else 'No match found'}")
+                    matches = entry["matches"]
+                    self.history_list.addItem(get_history_format(formatted_time,scanned_text, matches ))
         except FileNotFoundError:
             # No history file exists yet
             self.history = []
+            with open(HISTORY_FILE, "w") as file:
+                json.dump(self.history, file)
 
     def save_history(self):
         with open(HISTORY_FILE, "w") as file:
@@ -334,8 +349,8 @@ class ScanWindow(QWidget):
         """
         gif_paths = {
             "fred": "resources/fred-fred-mopping_200.gif",
-            "ready": "resources/ready_to_scan_256.gif",
-            "scanning": "resources/scanning_256.gif",
+            "ready": "resources/ready_to_scan_200.gif",
+            "scanning": "resources/scanning_200.gif",
         }
 
         if state in gif_paths:

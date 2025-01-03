@@ -1,5 +1,11 @@
 TODO
 
-- Number of rocks
+IMPORTANT, URGENT
+- Add asteroid mining support
+- Package the app
+
+NOT IMPORTANT, NOT URGENT
 - Clear history button
-- Fred is cleaning an eye on the ground, it'll be hilarious
+
+WISHLIST
+- Fred is cleaning an eye on the ground, it'll be hilarious.
