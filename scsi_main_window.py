@@ -2,7 +2,7 @@ import sys
 import json
 import ctypes
 from PyQt6.QtWidgets import QApplication, QRadioButton, QLabel, QVBoxLayout, QPushButton, QWidget, QListWidget, QHBoxLayout, QLineEdit, QGroupBox, QGridLayout
-from PyQt6.QtGui import QMovie, QIcon
+from PyQt6.QtGui import QMovie, QIcon, QFont
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from scsi_ocr_scanner import capture_screen, process_image
 from scsi_utils import get_region_size, load_rectangle_bounds, clean_input_text, find_matching_headers, format_new_results, get_history_format
@@ -210,6 +210,7 @@ class ScanWindow(QWidget):
 
         # History List
         self.history_list = QListWidget(self)
+        self.history_list.setFont(QFont("Arial Narrow",9))
         self.history_list.setAlternatingRowColors(True)
         self.history_list.setWordWrap(True)
 

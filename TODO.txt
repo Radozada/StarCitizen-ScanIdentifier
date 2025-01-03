@@ -1,9 +1,10 @@
 TODO
 
-IMPORTANT, URGENT
-- Package the app
+NOT IMPORTANT, URGENT
+
 
 NOT IMPORTANT, NOT URGENT
+
 - Clear history button
 
 WISHLIST

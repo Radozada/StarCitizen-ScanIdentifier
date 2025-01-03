@@ -1,6 +1,9 @@
 import pyautogui
-from pytesseract import image_to_string
 from PIL import Image
+import pytesseract
+from pytesseract import image_to_string
+
+pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
 def capture_screen(region, save_path):
     screenshot = pyautogui.screenshot(region=region)

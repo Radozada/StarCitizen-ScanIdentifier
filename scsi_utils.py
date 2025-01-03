@@ -30,27 +30,7 @@ def get_region_size():
     #Sets the region we want to be screenshotted
     region = ( desired_location_x, desired_location_y, region_width,region_height ) # Adjust this based on your screen area || left, top, width, and height
 
-    #debug_show_area_with_mouse( region )
-
     return region
-
-def debug_show_area_with_mouse( region,  speed = 0.5 ):
-    #-------------------------------------------------------------------------DEBUGGING
-    # Point 1: Move to starting point
-    pyautogui.moveTo( region[0],region[1], speed )
-
-    # Point 2: Add the width to the starting point X to get to the second point
-    pyautogui.moveTo( region[0] + region[2], region[1], speed) 
-
-    # Point 3: Add the height to the starting point Y to get to the third point
-    pyautogui.moveTo(None, region[1] + region[3], speed)
-
-    # Point 4: Move to starting point X but keep the height of the third point
-    pyautogui.moveTo( region[0],region[1] + region[3], speed )
-
-    # Point 5: Move back to starting point
-    pyautogui.moveTo( region[0],region[1], speed )
-    #-------------------------------------------------------------------------DEBUGGING
 
 import json
 import os
@@ -97,7 +77,6 @@ def clean_input_text(value):
 
 def check_table_values( s_table ):
     print(s_table)
-
 
 import sqlite3
 

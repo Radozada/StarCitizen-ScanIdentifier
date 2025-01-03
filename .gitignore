@@ -1,3 +1,8 @@
 data/scan_history.json
-output/data/rectangle_bounds.json
+data/rectangle_bounds.json
 output/data/scan_history.json
+output/data/rectangle_bounds.json
+__pycache__/scsi_ocr_scanner.cpython-310.pyc
+__pycache__/scsi_utils.cpython-310.pyc
+__pycache__/scsi_search_area_overlay.cpython-310.pyc
+screenshot.png
