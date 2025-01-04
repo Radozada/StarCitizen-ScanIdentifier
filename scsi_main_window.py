@@ -14,6 +14,8 @@ GROUND_MINERALS_TABLE_NAME = "GROUND_MINERALS"
 ASTEROIDS_TABLE_NAME = "ASTEROID_TYPES"
 SCREENSHOT_PATH = "data/screenshot.png"
 WINDOW_ICON = "resources/scsi_tool.ico"
+SCAN_AREA_ACTIVE_ICON = "resources/area_settings_active_icon_128.png"
+SCAN_AREA_ICON = "resources/area_settings_icon_128.png"
 
 class ScanWorker(QThread):
     # Define custom signals for passing results back to the UI
@@ -206,9 +208,14 @@ class ScanWindow(QWidget):
         history_label = QLabel("")
         history_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
+        # History Clear Button 
+        history_clear_button = QPushButton("Clear History", self)
+        history_clear_button.clicked.connect(self.clear_history)
+
         #History Label and Scan Area Button Layout
-        history_title_section_layout = QHBoxLayout()
-        history_title_section_layout.addWidget(history_label)
+        history_top_section_layout = QHBoxLayout()
+        history_top_section_layout.addWidget(history_label)
+        history_top_section_layout.addWidget(history_clear_button)
 
         # History List
         self.history_list = QListWidget(self)
@@ -216,7 +223,7 @@ class ScanWindow(QWidget):
         self.history_list.setAlternatingRowColors(True)
         self.history_list.setWordWrap(True)
 
-        #history_layout.addLayout(history_title_section_layout)
+        history_layout.addLayout(history_top_section_layout)
         history_layout.addWidget(self.history_list)
         history_groupbox.setLayout(history_layout)
 
@@ -259,12 +266,12 @@ class ScanWindow(QWidget):
             # Create and show the rectangle
             self.overlay_rectangle = OverlayRectangle( loc_x, loc_y, width, height )
             self.overlay_rectangle.show()
-            self.toggle_scan_area_button.setIcon(QIcon("resources/area_settings_active_icon_128.png"))
+            self.toggle_scan_area_button.setIcon(QIcon(SCAN_AREA_ACTIVE_ICON))
         else:
              # If the rectangle already exists, toggle it off
             self.overlay_rectangle.close()
             self.overlay_rectangle = None            
-            self.toggle_scan_area_button.setIcon(QIcon("resources/area_settings_icon_128.png"))
+            self.toggle_scan_area_button.setIcon(QIcon(SCAN_AREA_ICON))
 
     def start_scan(self):
         # Disable the scan buttons during the scan
@@ -349,6 +356,13 @@ class ScanWindow(QWidget):
     def save_history(self):
         with open(HISTORY_FILE, "w") as file:
             json.dump(self.history, file, indent=4)
+
+    def clear_history(self):
+        self.history = []
+        with open(HISTORY_FILE, "w") as file:
+                json.dump(self.history, file)
+
+        self.history_list.clear()
 
     def update_status_image(self, state):
         """
