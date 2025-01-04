@@ -1,11 +1,17 @@
 TODO
 
-NOT IMPORTANT, URGENT
+IMPORTANT, URGENT
+- Test the Tesseract integration on other PC's
 
-
-NOT IMPORTANT, NOT URGENT
+IMPORTANT, NOT URGENT
 
 - Clear history button
 
+NOT IMPORTANT, NOT URGENT
+
+-Make the results prettier
+Separate Gems from larger rocks in the Results section
+Maybe add more color differentiation in the History Section
+
 WISHLIST
-- Fred is cleaning an eye on the ground, it'll be hilarious.
+- Fred is cleaning an eye icon on the ground, it'll be hilarious. (tome)
