@@ -132,6 +132,7 @@ class ScanWindow(QWidget):
         self.input_textbox.setPlaceholderText("Example: 7200")
         self.input_textbox.setStyleSheet("font-size: 16px; padding: 10px;")
         self.input_textbox.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.input_textbox.returnPressed.connect(self.start_search)
         self.input_textbox.textChanged.connect(self.on_text_changed)
 
         # Input Search Button
@@ -188,7 +189,7 @@ class ScanWindow(QWidget):
         result_groupbox.setStyleSheet("QGroupBox { font-size: 14px; }")
         result_layout = QVBoxLayout()
         
-        self.result_label = QLabel("Radio Signature Results will appear here", self)
+        self.result_label = QLabel("Radio Signature Results will appear here.", self)
         self.result_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.result_label.setStyleSheet("font-size: 14px; padding: 10px; font: Arial")
         self.result_label.setWordWrap(True)
@@ -235,11 +236,14 @@ class ScanWindow(QWidget):
             self.input_search_button.setEnabled(False)
 
     def start_search(self):
-        self.input_search_button.setEnabled(False)
-        self.input_search_button.setText("Searching...") 
-        self.scan_button.setEnabled(False)
-        self.scanner_used = False        
-        self.result_label.setText("Searching...")
+        if self.input_search_button.isEnabled() == True:
+            self.input_search_button.setEnabled(False)
+            self.input_search_button.setText("Searching...") 
+            self.scan_button.setEnabled(False)
+            self.scanner_used = False        
+            self.result_label.setText("Searching...")
+        else:
+            return
 
         #starts cleaning when the scanner isn't being used
         self.update_status_image("fred")
