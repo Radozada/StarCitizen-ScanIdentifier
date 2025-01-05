@@ -2,19 +2,11 @@ TODO
 
 IMPORTANT, URGENT
 - Test the Tesseract integration on other PC's
+- Need to add a Key to the Results Section
 
 IMPORTANT, NOT URGENT
 
-- Toggle between Gems and Bigger Rocks for Ground Mining
-- Somehow allow users to select what they're looking for, if what they searched for was what they were looking for, highlight the group area? Change its color?
-  - Maybe a drop down of all elements in the selected mining method?   
-- Clear history button
-
 NOT IMPORTANT, NOT URGENT
-
-- Make the results prettier
-- Separate Gems from larger rocks in the Results section
-- Add more color differentiation in the History Section. Time is gray. Mineral name is Purple. Search is Cyan. 
 
 WISHLIST
 - Fred is cleaning an eye icon on the ground, it'll be hilarious. (tome)

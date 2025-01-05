@@ -1,11 +1,12 @@
 import sys
 import json
 import ctypes
-from PyQt6.QtWidgets import QApplication, QRadioButton, QLabel, QVBoxLayout, QPushButton, QWidget, QListWidget, QHBoxLayout, QLineEdit, QGroupBox, QGridLayout
+from PyQt6.QtWidgets import QApplication, QRadioButton, QLabel, QVBoxLayout, QPushButton, QWidget, QListWidget, QHBoxLayout, QLineEdit, QGroupBox, QGridLayout, QListWidgetItem
 from PyQt6.QtGui import QMovie, QIcon, QFont
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from scsi_ocr_scanner import capture_screen, process_image
-from scsi_utils import get_region_size, load_rectangle_bounds, clean_input_text, find_matching_headers, format_new_results, get_history_format
+from scsi_utils import get_region_size, load_rectangle_bounds, clean_input_text, find_matching_headers, results_to_widget, get_widget_item
+
 from scsi_search_area_overlay import OverlayRectangle
 
 HISTORY_FILE = "data/scan_history.json"
@@ -139,7 +140,7 @@ class ScanWindow(QWidget):
 
         # Input Search Button
         self.input_search_button = QPushButton("Search", self)
-        self.input_search_button.setToolTip("Searches database for whatever number is in the box.")
+        self.input_search_button.setToolTip("Searches database for search box entry.")
         self.input_search_button.clicked.connect(self.start_search)
         self.input_search_button.setEnabled(False)
 
@@ -189,18 +190,17 @@ class ScanWindow(QWidget):
         # RESULT SECTION
         result_groupbox = QGroupBox("Results", self)
         result_groupbox.setStyleSheet("QGroupBox { font-size: 14px; }")
-        result_layout = QVBoxLayout()
+        self.result_layout = QVBoxLayout()
         
-        self.result_label = QLabel("Radio Signature Results will appear here.", self)
-        self.result_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.result_label.setStyleSheet("font-size: 14px; padding: 10px; font: Arial")
-        self.result_label.setWordWrap(True)
-
-        result_layout.addWidget(self.result_label)
-        result_groupbox.setLayout(result_layout)
+        self.results_widget = QLabel("Ready to go")
+        self.results_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.result_layout.addWidget(self.results_widget)
+        result_groupbox.setLayout(self.result_layout)
 
         # HISTORY SECTION
         history_groupbox = QGroupBox("History", self)
+        history_groupbox.setMaximumWidth(400)
+        history_groupbox.setMinimumWidth(400)
         history_groupbox.setStyleSheet("QGroupBox { font-size: 14px; }")
         history_layout = QVBoxLayout()
         
@@ -222,21 +222,23 @@ class ScanWindow(QWidget):
         self.history_list.setFont(QFont("Arial Narrow",9))
         self.history_list.setAlternatingRowColors(True)
         self.history_list.setWordWrap(True)
+        self.history_list.setMaximumWidth(400)
 
         history_layout.addLayout(history_top_section_layout)
         history_layout.addWidget(self.history_list)
         history_groupbox.setLayout(history_layout)
 
         # Add all sections to the grid layout
-        grid_layout.addWidget(options_groupbox,      0, 0, 1, 1)
-        grid_layout.addWidget(input_groupbox,        1, 0, 1, 1)
-        grid_layout.addWidget(scan_groupbox,         2, 0, 1, 1)
-        grid_layout.addWidget(result_groupbox,       0, 1, 2, 1)
-        grid_layout.addWidget(history_groupbox,      2, 1, 1, 1)        
+        grid_layout.addWidget(options_groupbox, 0, 0, 1, 1)
+        grid_layout.addWidget(scan_groupbox,    1, 0, 1, 1)
+        grid_layout.addWidget(input_groupbox,   2, 0, 1, 1)
+        grid_layout.addWidget(history_groupbox, 0, 1, 2, 1)
+        grid_layout.addWidget(result_groupbox,  2, 1, 1, 1)        
 
-        self.setLayout(grid_layout)      
+        self.setLayout(grid_layout)
 
     def on_text_changed(self, text):
+        '''Turns off the Search Button when there is no text in the search box'''
         if text:
             self.input_search_button.setEnabled(True)
         else:
@@ -248,7 +250,6 @@ class ScanWindow(QWidget):
             self.input_search_button.setText("Searching...") 
             self.scan_button.setEnabled(False)
             self.scanner_used = False        
-            self.result_label.setText("Searching...")
         else:
             return
 
@@ -279,8 +280,7 @@ class ScanWindow(QWidget):
         self.scan_button.setEnabled(False)
         self.input_search_button.setEnabled(False)
         self.update_status_image("scanning")        
-        self.scanner_used = True        
-        self.result_label.setText("Scanning...")
+        self.scanner_used = True
 
         self.start_scan_worker()
 
@@ -293,14 +293,12 @@ class ScanWindow(QWidget):
         self.worker.start()
 
     def handle_scan_finished(self, scanned_text, matches):
-
-        results = format_new_results(scanned_text,matches)
-
         # Display results
-        self.result_label.setText(results[0])
+        results = results_to_widget(scanned_text, matches)
+        self.update_results(results)
 
         # Add to history
-        self.add_to_history(results[1], results[2], results[3])
+        self.add_to_history(results)
 
         if self.scanner_used:
             # Update the status to "ready" only when the scanner was used
@@ -322,17 +320,29 @@ class ScanWindow(QWidget):
             self.worker.wait()  # Wait for it to finish
             self.worker = None  # Clear the reference to the thread
 
-    def add_to_history(self, formatted_time, scanned_text, matches):        
+    def update_results(self, results):  
+        if self.results_widget:      
+            self.results_widget.deleteLater()
+            self.results_widget = None
+        self.results_widget = get_widget_item(results["time"], results["scanned_text"], results["matches"])
+        self.result_layout.addWidget(self.results_widget)
+
+    def add_to_history(self, results):       
         # Create entry
         entry = {
-            "time": formatted_time,
-            "scanned_text": scanned_text,
-            "matches": matches,
+            "time": results["time"],
+            "scanned_text": results["scanned_text"],
+            "matches": results["matches"],
         }
 
         # Update history
         self.history.append(entry)
-        self.history_list.addItem(get_history_format(formatted_time, scanned_text, matches))
+
+        # Need to create a QListWidgetItem before making it into a custom results widget
+        list_widget_item = QListWidgetItem()
+        list_widget_item.setSizeHint(results["widget_item"].sizeHint())
+        self.history_list.addItem(list_widget_item)
+        self.history_list.setItemWidget(list_widget_item, results["widget_item"])
         self.history_list.scrollToBottom()
 
         # Save history to file
@@ -343,10 +353,16 @@ class ScanWindow(QWidget):
             with open(HISTORY_FILE, "r") as file:
                 self.history = json.load(file)
                 for entry in self.history:
-                    formatted_time = entry["time"]
+                    time = entry["time"]
                     scanned_text = entry["scanned_text"]
                     matches = entry["matches"]
-                    self.history_list.addItem(get_history_format(formatted_time,scanned_text, matches ))
+
+                    # Need to create a QListWidgetItem before making it into a custom results widget
+                    list_widget_item = QListWidgetItem()
+                    results_widget = get_widget_item(time, scanned_text, matches)
+                    list_widget_item.setSizeHint(results_widget.sizeHint())
+                    self.history_list.addItem(list_widget_item)
+                    self.history_list.setItemWidget(list_widget_item, results_widget)
         except FileNotFoundError:
             # No history file exists yet
             self.history = []

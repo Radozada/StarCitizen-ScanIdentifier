@@ -84,3 +84,7 @@ This project is licensed under the MIT License. See the LICENSE file for details
 Developer: Jonathan Alvarado
 
 Special Thanks: Stardads
+
+<a href="https://www.flaticon.com/free-icons/rock" title="rock icons">Rock icons created by Icongeek26 - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/asteroid" title="asteroid icon">Asteroid icons created by VectorPortal - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/vulture" title="vulture icons">Vulture icons created by Freepik - Flaticon</a>
