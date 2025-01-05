@@ -77,14 +77,16 @@ This project requires the following dependencies:
    ![History Section](https://github.com/user-attachments/assets/402167c8-2c43-48a4-9082-e0516b36936a)
 
 
-# License
+## License
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-# Credits
+## Credits
 Developer: Jonathan Alvarado
 
 Special Thanks: Stardads
 
+## Attributions
+<a href="https://www.flaticon.com/free-icons/gem" title="gem icons">Gem icons created by Freepik - Flaticon</a>
 <a href="https://www.flaticon.com/free-icons/rock" title="rock icons">Rock icons created by Icongeek26 - Flaticon</a>
 <a href="https://www.flaticon.com/free-icons/asteroid" title="asteroid icon">Asteroid icons created by VectorPortal - Flaticon</a>
 <a href="https://www.flaticon.com/free-icons/vulture" title="vulture icons">Vulture icons created by Freepik - Flaticon</a>
