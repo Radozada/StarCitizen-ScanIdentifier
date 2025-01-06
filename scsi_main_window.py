@@ -2,10 +2,10 @@ import sys
 import json
 import ctypes
 from PyQt6.QtWidgets import QApplication, QRadioButton, QLabel, QVBoxLayout, QPushButton, QWidget, QListWidget, QHBoxLayout, QLineEdit, QGroupBox, QGridLayout, QListWidgetItem
-from PyQt6.QtGui import QMovie, QIcon, QFont
+from PyQt6.QtGui import QMovie, QIcon, QFont, QPixmap, QFontMetrics
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from scsi_ocr_scanner import capture_screen, process_image
-from scsi_utils import get_region_size, load_rectangle_bounds, clean_input_text, find_matching_headers, results_to_widget, get_widget_item
+from scsi_utils import get_region_size, load_rectangle_bounds, clean_input_text, find_matching_headers, results_to_widget, get_widget_item, assign_icon
 
 from scsi_search_area_overlay import OverlayRectangle
 
@@ -95,6 +95,9 @@ class ScanWindow(QWidget):
             hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ctypes.byref(ctypes.c_int(1)), ctypes.sizeof(ctypes.c_int)
         )
 
+        # Style Sheet for all the Group Boxes
+        #group_box_style_sheet = "QGroupBox { font-size: 14px; color: #74006a; }"
+
         # Center the window
         screen = QApplication.primaryScreen().geometry()
         x = (screen.width() - self.width()) // 2
@@ -102,19 +105,19 @@ class ScanWindow(QWidget):
         self.move(x, y)
 
         #Used for determining status image changes
-        self.scanner_used = False
-
-        # Grid Layout
-        grid_layout = QGridLayout()               
+        self.scanner_used = False              
 
         # OPTIONS SECTION
         options_groupbox = QGroupBox("Options", self)
-        options_groupbox.setStyleSheet("QGroupBox { font-size: 14px; }")
+        options_groupbox.setStyleSheet("QGroupBox {font-size: 14px;}")
         options_layout = QVBoxLayout()
         
         self.options_radio_button_ground_mining = QRadioButton("Ground Mining")
         self.options_radio_button_ground_mining.setChecked(True)
         self.options_radio_button_asteroid_mining = QRadioButton("Asteroid Mining")
+
+        self.options_radio_button_asteroid_mining.clicked.connect(self.update_results_key)
+        self.options_radio_button_ground_mining.clicked.connect(self.update_results_key)
 
         options_layout.addWidget(self.options_radio_button_ground_mining)
         options_layout.addWidget(self.options_radio_button_asteroid_mining)
@@ -194,6 +197,8 @@ class ScanWindow(QWidget):
         
         self.results_widget = QLabel("Ready to go")
         self.results_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setup_asteroid_results_view()
+        self.setup_ground_results_view()
         self.result_layout.addWidget(self.results_widget)
         result_groupbox.setLayout(self.result_layout)
 
@@ -228,12 +233,15 @@ class ScanWindow(QWidget):
         history_layout.addWidget(self.history_list)
         history_groupbox.setLayout(history_layout)
 
+        # Grid Layout
+        grid_layout = QGridLayout() 
+
         # Add all sections to the grid layout
-        grid_layout.addWidget(options_groupbox, 0, 0, 1, 1)
-        grid_layout.addWidget(scan_groupbox,    1, 0, 1, 1)
-        grid_layout.addWidget(input_groupbox,   2, 0, 1, 1)
-        grid_layout.addWidget(history_groupbox, 0, 1, 2, 1)
-        grid_layout.addWidget(result_groupbox,  2, 1, 1, 1)        
+        grid_layout.addWidget(options_groupbox,  0, 0, 1, 1)
+        grid_layout.addWidget(input_groupbox,    1, 0, 1, 1)
+        grid_layout.addWidget(scan_groupbox,     2, 0, 1, 1)
+        grid_layout.addWidget(result_groupbox,   0, 1, 2, 1)
+        grid_layout.addWidget(history_groupbox,  2, 1, 1, 1)        
 
         self.setLayout(grid_layout)
 
@@ -320,13 +328,6 @@ class ScanWindow(QWidget):
             self.worker.wait()  # Wait for it to finish
             self.worker = None  # Clear the reference to the thread
 
-    def update_results(self, results):  
-        if self.results_widget:      
-            self.results_widget.deleteLater()
-            self.results_widget = None
-        self.results_widget = get_widget_item(results["time"], results["scanned_text"], results["matches"])
-        self.result_layout.addWidget(self.results_widget)
-
     def add_to_history(self, results):       
         # Create entry
         entry = {
@@ -396,6 +397,87 @@ class ScanWindow(QWidget):
             movie = QMovie(gif_path)
             self.status_image_label.setMovie(movie)
             movie.start()
+    
+    def setup_ground_results_view(self):
+        # Gems Key Label
+        gems_label_text = "Gems means any of them."
+        self.gems_label = QLabel(gems_label_text)
+        self.gems_label.setToolTip("Gems share their Radio Signature.")
+        self.gems_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.gems_label.setFixedWidth(QFontMetrics(self.gems_label.font()).horizontalAdvance(gems_label_text) + 15)
+        self.gems_label.setWordWrap(True)
+        self.gems_label.setStyleSheet("color: #3ec500; font-weight: Bold; font-style:italic ;")
+        
+        # Icons Labels
+        aph_icon_path = assign_icon("Aphorite")
+        self.aph_icon_label = QLabel()
+        self.aph_icon_label.setToolTip("Aphorite")
+        self.aph_icon_label.setFixedWidth(24)
+        self.aph_icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.aph_icon_label.setPixmap(QPixmap(aph_icon_path).scaled(16, 16))  # Adjust size as needed
+        dol_icon_path = assign_icon("Dolivine")
+        self.dol_icon_label = QLabel()
+        self.dol_icon_label.setToolTip("Dolivine")
+        self.dol_icon_label.setFixedWidth(24)
+        self.dol_icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.dol_icon_label.setPixmap(QPixmap(dol_icon_path).scaled(16, 16))  # Adjust size as needed
+        had_icon_path = assign_icon("Hadanite")
+        self.had_icon_label = QLabel()
+        self.had_icon_label.setToolTip("Hadanite")
+        self.had_icon_label.setFixedWidth(24)
+        self.had_icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.had_icon_label.setPixmap(QPixmap(had_icon_path).scaled(16, 16))  # Adjust size as needed
+        jal_icon_path = assign_icon("Janalite")
+        self.jal_icon_label = QLabel()
+        self.jal_icon_label.setToolTip("Janalite")
+        self.jal_icon_label.setFixedWidth(24)
+        self.jal_icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.jal_icon_label.setPixmap(QPixmap(jal_icon_path).scaled(16, 16))  # Adjust size as needed
+        
+        self.gems_h_layout_1 = QHBoxLayout()
+        self.gems_h_layout_1.addWidget(self.aph_icon_label)
+        self.gems_h_layout_1.addWidget(self.dol_icon_label)
+        self.gems_h_layout_1.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        self.gems_h_layout_2 = QHBoxLayout()
+        self.gems_h_layout_2.addWidget(self.had_icon_label)
+        self.gems_h_layout_2.addWidget(self.jal_icon_label)
+        self.gems_h_layout_2.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        self.gems_v_layout = QVBoxLayout()
+        self.gems_v_layout.addLayout(self.gems_h_layout_1)
+        self.gems_v_layout.addLayout(self.gems_h_layout_2)
+        self.gems_v_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.ground_results_key_layout = QHBoxLayout()
+        self.ground_results_key_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.ground_results_key_layout.setContentsMargins(1, 1, 1, 1)
+        self.ground_results_key_layout.setSpacing(1)#for debugging set to 1
+        self.ground_results_key_layout.addWidget(self.gems_label)
+        self.ground_results_key_layout.addLayout(self.gems_v_layout)
+        
+        # Groupbox
+        self.ground_results_key_groupbox = QGroupBox("", self)
+        self.ground_results_key_groupbox.setStyleSheet("QGroupBox { font-size: 14px; }")
+        self.ground_results_key_groupbox.setLayout(self.ground_results_key_layout)
+
+        self.result_layout.addWidget(self.ground_results_key_groupbox)
+
+    def setup_asteroid_results_view(self):        
+        print("Setup Asteroid Results")
+
+    def update_results_key(self):
+        if self.options_radio_button_ground_mining.isChecked():
+            self.ground_results_key_groupbox.show()
+        elif self.options_radio_button_asteroid_mining.isChecked():
+            self.ground_results_key_groupbox.hide()
+        
+    def update_results(self, results):
+        if self.results_widget:      
+            self.results_widget.deleteLater()
+            self.results_widget = None
+        self.results_widget = get_widget_item(results["time"], results["scanned_text"], results["matches"])
+        self.result_layout.addWidget(self.results_widget)
 
 import qdarkstyle
 

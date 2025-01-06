@@ -216,7 +216,7 @@ class RadarSignatureListItem(QWidget):
         # Time Label
         if time:
             self.time_label = QLabel(time)
-            self.time_label.setStyleSheet("color: #0055ff; font-weight: underline;")
+            self.time_label.setStyleSheet("color: #0055ff; text-decoration: underline solid;")
             self.time_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.time_label.setFixedWidth(QFontMetrics(self.time_label.font()).horizontalAdvance(time) + 15)
             main_h_layout.addWidget(self.time_label)
@@ -225,7 +225,7 @@ class RadarSignatureListItem(QWidget):
         self.search_label = QLabel(search) 
         self.search_label.setWordWrap(True)
         self.search_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.search_label.setStyleSheet("color: #00d0d0; font-weight: bold;")  # Cyan color   
+        self.search_label.setStyleSheet("color: #00d0d0; font-weight: bold;")  
         self.search_label.setFixedWidth(QFontMetrics(self.search_label.font()).horizontalAdvance(search) + 15)
         main_h_layout.addWidget(self.search_label)
 
@@ -238,7 +238,7 @@ class RadarSignatureListItem(QWidget):
                 match_h_wrapper_layout = QHBoxLayout()
 
                 # Icon Label
-                icon_path = self.assign_icon(header)
+                icon_path = assign_icon(header)
                 if icon_path:
                     self.icon_label = QLabel()
                     self.icon_label.setFixedWidth(24)
@@ -248,14 +248,14 @@ class RadarSignatureListItem(QWidget):
                 # Mineral Name Label (custom color)
                 self.mineral_label = QLabel(header)
                 self.mineral_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                self.mineral_label.setStyleSheet("color: #FFD700;")  # Gold color
+                self.mineral_label.setStyleSheet("color: #FFD700;")
                 self.mineral_label.setFixedWidth(QFontMetrics(self.mineral_label.font()).horizontalAdvance(header) + 15)
                 self.mineral_label.adjustSize()
 
                 # Nodes Label (custom color)
                 self.nodes_label = QLabel(nodes + " Nodes")
                 self.nodes_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-                self.nodes_label.setStyleSheet("color: #00FF00;")  # Green color
+                self.nodes_label.setStyleSheet("color: #00FF00;")
                 #self.nodes_label.adjustSize()
 
                 # Horizontal Layout Setup
@@ -269,37 +269,40 @@ class RadarSignatureListItem(QWidget):
         else:
             self.nothing_found_label = QLabel(no_matches_string)
             self.nothing_found_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-            self.nothing_found_label.setStyleSheet("color: #00FF00;")  # Green color
+            self.nothing_found_label.setStyleSheet("color: #c90000;")  # Green color
             match_v_wrapper_layout.addWidget(self.nothing_found_label)
 
-    def assign_icon( self, header ):
-        '''Determines what icon to assign based on the result'''
-        icon_path = None
+def assign_icon( header ):
+    '''Determines what icon to assign based on the result'''
+    icon_path = None
 
-        # Set icon based on the result text
-        if "Aphorite" in header:
-            icon_path = GEM_APHORITE_ICON
-            #print("gemstone_aphorite")
-        elif "Dolivine" in header:
-            icon_path = GEM_DOLIVINE_ICON
-            #print("gemstone_dolivine")
-        elif "Hadanite" in header:
-            icon_path = GEM_HADANITE_ICON
-            #print("gemstone_hadanite")
-        elif "Janalite" in header:
-            icon_path = GEM_JANALITE_ICON
-            #print("gemstone_janalite") 
-        elif "Gems" in header:
-            icon_path = GEM_APHORITE_ICON
-            #print("gemstone_janalite") 
-        elif "Type" in header:
-            icon_path = ASTEROID_TYPE_ICON
-            #print("asteroid") 
-        elif "Salvage" in header:
-            icon_path = SALVAGE_ICON
-            #print("salvage")
-        else:
-            icon_path = DEPOSIT_ICON
-            #print("salvage")
+    # Set icon based on the result text
+    if "Aphorite" in header:
+        icon_path = GEM_APHORITE_ICON
+        #print("gemstone_aphorite")
+    elif "Dolivine" in header:
+        icon_path = GEM_DOLIVINE_ICON
+        #print("gemstone_dolivine")
+    elif "Hadanite" in header:
+        icon_path = GEM_HADANITE_ICON
+        #print("gemstone_hadanite")
+    elif "Janalite" in header:
+        icon_path = GEM_JANALITE_ICON
+        #print("gemstone_janalite") 
+    elif "Gems" in header:
+        icon_path = GEM_APHORITE_ICON
+        #print("gemstone_janalite") 
+    elif "Type" in header:
+        icon_path = ASTEROID_TYPE_ICON
+        #print("asteroid") 
+    elif "Salvage" in header:
+        icon_path = SALVAGE_ICON
+        #print("salvage")
+    else:
+        icon_path = DEPOSIT_ICON
+        #print("salvage")
 
-        return icon_path
+    return icon_path
+
+#def create_results_key():
+#    print("dondidit")

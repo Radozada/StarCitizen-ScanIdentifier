@@ -2,11 +2,13 @@ TODO
 
 IMPORTANT, URGENT
 - Test the Tesseract integration on other PC's
-- Need to add a Key to the Results Section
+
 
 IMPORTANT, NOT URGENT
+- 
 
 NOT IMPORTANT, NOT URGENT
+- Global Style Sheet, visual upgrade
 
 WISHLIST
 - Fred is cleaning an eye icon on the ground, it'll be hilarious. (tome)
