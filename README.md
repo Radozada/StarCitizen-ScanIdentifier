@@ -1,8 +1,7 @@
 # Star Citizen Scan Identifier
 A Python application for scanning and identifying Radar Signatures in Star Citizen. This project reads data from an on-screen capture and identifies related details from a packaged database.
 
-![SC_ScanID_Screenshot](https://github.com/user-attachments/assets/3737c054-3b01-4206-8e88-feb804a4c802)
-
+![SC_ScanID_Screenshot](https://github.com/user-attachments/assets/a70136d2-c7d5-416d-97be-90932916370a)
 
 # Features
 - Screen Capture & OCR: Captures a region of your screen and processes it using OCR.
@@ -69,13 +68,12 @@ This project requires the following dependencies:
 ## View Results
    - Identified elements are displayed in the Results section.
    - Number of Nodes is the number of rocks calculated.
-
-   ![Results Section](https://github.com/user-attachments/assets/12e5f88d-c64b-4cd5-9858-5d18d5234b08)
-
+   
+     ![Results Section](https://github.com/user-attachments/assets/ce7839dc-d9ae-41b2-a94f-7a71b94fda1a)
+   
    - The application also saves search history for future reference.
 
-   ![History Section](https://github.com/user-attachments/assets/402167c8-2c43-48a4-9082-e0516b36936a)
-
+     ![History Section](https://github.com/user-attachments/assets/3a395f33-0259-4b34-b4e2-a7f3f1c78af2)
 
 ## License
 This project is licensed under the MIT License. See the LICENSE file for details.
@@ -86,7 +84,7 @@ Developer: Jonathan Alvarado
 Special Thanks: Stardads
 
 ## Attributions
-<a href="https://www.flaticon.com/free-icons/gem" title="gem icons">Gem icons created by Freepik - Flaticon</a>
-<a href="https://www.flaticon.com/free-icons/rock" title="rock icons">Rock icons created by Icongeek26 - Flaticon</a>
-<a href="https://www.flaticon.com/free-icons/asteroid" title="asteroid icon">Asteroid icons created by VectorPortal - Flaticon</a>
-<a href="https://www.flaticon.com/free-icons/vulture" title="vulture icons">Vulture icons created by Freepik - Flaticon</a>
+- <a href="https://www.flaticon.com/free-icons/gem" title="gem icons">Gem icons created by Freepik - Flaticon</a>
+- <a href="https://www.flaticon.com/free-icons/rock" title="rock icons">Rock icons created by Icongeek26 - Flaticon</a>
+- <a href="https://www.flaticon.com/free-icons/asteroid" title="asteroid icon">Asteroid icons created by VectorPortal - Flaticon</a>
+- <a href="https://www.flaticon.com/free-icons/vulture" title="vulture icons">Vulture icons created by Freepik - Flaticon</a>
