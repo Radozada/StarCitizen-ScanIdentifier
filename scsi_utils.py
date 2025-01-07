@@ -189,14 +189,14 @@ def get_widget_item(time, scanned_text, matches):
     return radar_search_widget
 
 from PyQt6.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout
-from PyQt6.QtGui import QPixmap, QColor, QFont, QFontMetrics
+from PyQt6.QtGui import QPixmap, QFontMetrics
 from PyQt6.QtCore import Qt
 
 GEM_APHORITE_ICON = "resources/gemstone_aphorite.png" #ground mining
 GEM_DOLIVINE_ICON = "resources/gemstone_dolivine.png" #ground mining
 GEM_HADANITE_ICON = "resources/gemstone_hadanite.png" #ground mining
 GEM_JANALITE_ICON = "resources/gemstone_janalite.png" #ground mining
-DEPOSIT_ICON = "resources/stone.png"                  #ground mining
+DEPOSIT_ICON      = "resources/stone.png"             #ground mining
 
 ASTEROID_TYPE_ICON = "resources/asteroid.png"         #asteroid mining
 SALVAGE_ICON = "resources/vulture.png"                #asteroid mining
@@ -205,6 +205,8 @@ SALVAGE_ICON = "resources/vulture.png"                #asteroid mining
 class RadarSignatureListItem(QWidget):
     def __init__(self, time, search, matches):
         super().__init__()
+
+        self.item_text = ""
 
         no_matches_string = "No results"
         
@@ -216,18 +218,20 @@ class RadarSignatureListItem(QWidget):
         # Time Label
         if time:
             self.time_label = QLabel(time)
-            self.time_label.setStyleSheet("color: #0055ff; text-decoration: underline solid;")
+            self.time_label.setStyleSheet("color: #ffffff;")
             self.time_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.time_label.setFixedWidth(QFontMetrics(self.time_label.font()).horizontalAdvance(time) + 15)
             main_h_layout.addWidget(self.time_label)
+            #self.add_to_element_string(time)
 
         # Search Label
         self.search_label = QLabel(search) 
         self.search_label.setWordWrap(True)
         self.search_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.search_label.setStyleSheet("color: #00d0d0; font-weight: bold;")  
+        self.search_label.setStyleSheet("color: #37AEFE; font-weight: bold;") ##00d0d0
         self.search_label.setFixedWidth(QFontMetrics(self.search_label.font()).horizontalAdvance(search) + 15)
         main_h_layout.addWidget(self.search_label)
+        self.add_to_element_string("Search: " + search + " |")
 
         match_v_wrapper_layout = QVBoxLayout()
         match_v_wrapper_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
@@ -250,13 +254,15 @@ class RadarSignatureListItem(QWidget):
                 self.mineral_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.mineral_label.setStyleSheet("color: #FFD700;")
                 self.mineral_label.setFixedWidth(QFontMetrics(self.mineral_label.font()).horizontalAdvance(header) + 15)
-                self.mineral_label.adjustSize()
+                self.mineral_label.adjustSize()       
+                self.add_to_element_string(" " + header)                
 
                 # Nodes Label (custom color)
                 self.nodes_label = QLabel(nodes + " Nodes")
                 self.nodes_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
                 self.nodes_label.setStyleSheet("color: #00FF00;")
-                #self.nodes_label.adjustSize()
+                #self.nodes_label.adjustSize()  
+                self.add_to_element_string(str(" " + nodes + " Nodes" + " |"))
 
                 # Horizontal Layout Setup
                 if icon_path:
@@ -269,8 +275,13 @@ class RadarSignatureListItem(QWidget):
         else:
             self.nothing_found_label = QLabel(no_matches_string)
             self.nothing_found_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-            self.nothing_found_label.setStyleSheet("color: #c90000;")  # Green color
+            self.nothing_found_label.setStyleSheet("color: #c90000;")  # Red color
             match_v_wrapper_layout.addWidget(self.nothing_found_label)
+            self.add_to_element_string(" " + no_matches_string + " |")
+
+    def add_to_element_string( self, new_text ):        
+        self.item_text = self.item_text + new_text
+
 
 def assign_icon( header ):
     '''Determines what icon to assign based on the result'''

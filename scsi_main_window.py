@@ -1,8 +1,8 @@
 import sys
 import json
 import ctypes
-from PyQt6.QtWidgets import QApplication, QRadioButton, QLabel, QVBoxLayout, QPushButton, QWidget, QListWidget, QHBoxLayout, QLineEdit, QGroupBox, QGridLayout, QListWidgetItem
-from PyQt6.QtGui import QMovie, QIcon, QFont, QPixmap, QFontMetrics
+from PyQt6.QtWidgets import QApplication, QMenu, QToolTip, QRadioButton, QLabel, QVBoxLayout, QPushButton, QWidget, QListWidget, QHBoxLayout, QLineEdit, QGroupBox, QGridLayout, QListWidgetItem
+from PyQt6.QtGui import QMovie, QIcon, QFont, QPixmap, QFontMetrics, QKeySequence
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from scsi_ocr_scanner import capture_screen, process_image
 from scsi_utils import get_region_size, load_rectangle_bounds, clean_input_text, find_matching_headers, results_to_widget, get_widget_item, assign_icon
@@ -105,12 +105,14 @@ class ScanWindow(QWidget):
         self.move(x, y)
 
         #Used for determining status image changes
-        self.scanner_used = False              
+        self.scanner_used = False
+        self.status_image_state = None
 
         # OPTIONS SECTION
         options_groupbox = QGroupBox("Options", self)
         options_groupbox.setStyleSheet("QGroupBox {font-size: 14px;}")
         options_layout = QVBoxLayout()
+        options_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         self.options_radio_button_ground_mining = QRadioButton("Ground Mining")
         self.options_radio_button_ground_mining.setChecked(True)
@@ -136,7 +138,7 @@ class ScanWindow(QWidget):
         # Input Text Box
         self.input_textbox = QLineEdit(self)
         self.input_textbox.setPlaceholderText("Example: 7200")
-        self.input_textbox.setStyleSheet("font-size: 16px; padding: 10px;")
+        self.input_textbox.setStyleSheet("font-size: 16px; padding: 10px; color: #37AEFE")
         self.input_textbox.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.input_textbox.returnPressed.connect(self.start_search)
         self.input_textbox.textChanged.connect(self.on_text_changed)
@@ -224,10 +226,22 @@ class ScanWindow(QWidget):
 
         # History List
         self.history_list = QListWidget(self)
-        self.history_list.setFont(QFont("Arial Narrow",9))
-        self.history_list.setAlternatingRowColors(True)
-        self.history_list.setWordWrap(True)
+        self.history_list.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.history_list.customContextMenuRequested.connect(self.show_history_context_menu)
         self.history_list.setMaximumWidth(400)
+        self.history_list.setStyleSheet("""
+            QListWidget::item {
+                background-color: #455364;
+            }
+            QListWidget::item:hover {
+                background-color: #19232D;
+            }
+            QListWidget::item:selected {
+                background-color: #37AEFE;
+            }
+        """)
+
+        ##455364#00afaf#00ffff
 
         history_layout.addLayout(history_top_section_layout)
         history_layout.addWidget(self.history_list)
@@ -241,9 +255,43 @@ class ScanWindow(QWidget):
         grid_layout.addWidget(input_groupbox,    1, 0, 1, 1)
         grid_layout.addWidget(scan_groupbox,     2, 0, 1, 1)
         grid_layout.addWidget(result_groupbox,   0, 1, 2, 1)
-        grid_layout.addWidget(history_groupbox,  2, 1, 1, 1)        
+        grid_layout.addWidget(history_groupbox,  2, 1, 1, 1)
 
         self.setLayout(grid_layout)
+
+    def show_history_context_menu(self, position):
+        item = self.history_list.itemAt(position)
+        if item is None:
+            return
+        
+        # Create Menu
+        menu = QMenu(self)
+        copy_action = menu.addAction("Copy")
+
+        # Exec menu, and get the selected action
+        action = menu.exec(self.history_list.mapToGlobal(position))
+
+        # Perform actions based on selected menu option
+        if action == copy_action:
+            self.copy_history_item_to_clipboard(item)
+
+    def copy_history_item_to_clipboard(self, item):
+        clipboard = QApplication.clipboard()
+        clipboard.setText(item.item_text)
+
+    def keyPressEvent(self, event):
+        if event.matches(QKeySequence.StandardKey.Copy):
+            self.copy_history_selected_item()
+        else:
+            super().keyPressEvent(event)
+
+    def copy_history_selected_item(self):
+        selected_item = self.history_list.currentItem()
+        if selected_item is not None:
+            clipboard = QApplication.clipboard()
+            clipboard.setText(selected_item.item_text)
+        
+        
 
     def on_text_changed(self, text):
         '''Turns off the Search Button when there is no text in the search box'''
@@ -328,7 +376,7 @@ class ScanWindow(QWidget):
             self.worker.wait()  # Wait for it to finish
             self.worker = None  # Clear the reference to the thread
 
-    def add_to_history(self, results):       
+    def add_to_history(self, results):
         # Create entry
         entry = {
             "time": results["time"],
@@ -344,6 +392,8 @@ class ScanWindow(QWidget):
         list_widget_item.setSizeHint(results["widget_item"].sizeHint())
         self.history_list.addItem(list_widget_item)
         self.history_list.setItemWidget(list_widget_item, results["widget_item"])
+        list_widget_item.setSelected(True)
+        list_widget_item.item_text = results["widget_item"].item_text
         self.history_list.scrollToBottom()
 
         # Save history to file
@@ -364,6 +414,7 @@ class ScanWindow(QWidget):
                     list_widget_item.setSizeHint(results_widget.sizeHint())
                     self.history_list.addItem(list_widget_item)
                     self.history_list.setItemWidget(list_widget_item, results_widget)
+                    list_widget_item.item_text = results_widget.item_text
         except FileNotFoundError:
             # No history file exists yet
             self.history = []
@@ -381,6 +432,11 @@ class ScanWindow(QWidget):
 
         self.history_list.clear()
 
+    def copy_history_item(self, item):        
+        #self.history_list.clicked.connect(self.copy_history_item(self.history_list.currentItem()))
+        clipboard = app.clipboard()
+        clipboard.setText(str(item)) 
+
     def update_status_image(self, state):
         """
         Update the status image based on the current state.
@@ -392,11 +448,18 @@ class ScanWindow(QWidget):
             "scanning": "resources/scanning_200.gif",
         }
 
+        if self.status_image_state != state:
+            self.status_image_state = state
+        else:
+            return
+
+        #print("B "+ state)
         if state in gif_paths:
             gif_path = gif_paths[state]
-            movie = QMovie(gif_path)
-            self.status_image_label.setMovie(movie)
-            movie.start()
+            self.movie = QMovie(gif_path)            
+            self.status_image_label.setMovie(self.movie)
+            self.movie.start()
+            #print("A "+ self.movie.fileName())
     
     def setup_ground_results_view(self):
         # Gems Key Label
@@ -406,7 +469,7 @@ class ScanWindow(QWidget):
         self.gems_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.gems_label.setFixedWidth(QFontMetrics(self.gems_label.font()).horizontalAdvance(gems_label_text) + 15)
         self.gems_label.setWordWrap(True)
-        self.gems_label.setStyleSheet("color: #3ec500; font-weight: Bold; font-style:italic ;")
+        self.gems_label.setStyleSheet("color: #3ec500; font-weight: bold; font-style:italic;")
         
         # Icons Labels
         aph_icon_path = assign_icon("Aphorite")
