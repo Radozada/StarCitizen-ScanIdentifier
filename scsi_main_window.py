@@ -83,7 +83,7 @@ class ScanWindow(QWidget):
 
     def init_ui(self):
         # Set up the window
-        self.setWindowTitle("SC Scan ID")
+        self.setWindowTitle("Radar Scan ID v0.8")
         self.setWindowIcon(QIcon(WINDOW_ICON))
         self.setGeometry(100, 100, 800, 500)  # Window size
         self.setFixedSize(800, 500)  # Fixed size window
