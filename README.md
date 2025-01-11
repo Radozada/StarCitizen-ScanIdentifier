@@ -23,8 +23,7 @@ This project requires the following dependencies:
 # How to use
 
 ## Launch SC Scan ID Executable
- ### 1. Once you launch if you get a blank command console just hit the Enter Key and it should launch the window
- ### 2. Set the database to search depending on what kind of mining you are doing
+ ### Set the database to search depending on what kind of mining you are doing
 ![Options Section](https://github.com/user-attachments/assets/984f4d47-79be-4a26-b86d-c3598447d6ef)
 
 ## Manual Search
