@@ -1,7 +1,7 @@
-# Star Citizen Scan Identifier
+# Radar Scan ID
 A Python application for scanning and identifying Radar Signatures in Star Citizen. This project reads data from an on-screen capture and identifies related details from a packaged database.
 
-![SC_ScanID_Screenshot](https://github.com/user-attachments/assets/a70136d2-c7d5-416d-97be-90932916370a)
+![Radar_Scan_ID_Screenshot](https://github.com/user-attachments/assets/e32d1ee3-437b-4582-9cf2-0b458ff6e420)
 
 # Features
 - Screen Capture & OCR: Captures a region of your screen and processes it using OCR.
@@ -67,21 +67,14 @@ This project requires the following dependencies:
 
 ## View Results
    - Identified elements are displayed in the Results section.
-   - Number of Nodes is the number of rocks calculated.
-   
-     ![Results Section](https://github.com/user-attachments/assets/ce7839dc-d9ae-41b2-a94f-7a71b94fda1a)
-   
-   - The application also saves search history for future reference.
-
-     ![History Section](https://github.com/user-attachments/assets/3a395f33-0259-4b34-b4e2-a7f3f1c78af2)
+   - Previous searches are saved for future reference.
+     ![Results Section](https://github.com/user-attachments/assets/31849708-c15b-4ea7-b6c8-35c60b405f2f)   
 
 ## License
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is licensed under the MIT License. See the [LICENSE](https://github.com/Radozada/StarCitizen-ScanIdentifier/blob/main/LICENSE) file for details.
 
 ## Credits
 Developer: Jonathan Alvarado
-
-Special Thanks: Stardads
 
 ## Attributions
 - <a href="https://www.flaticon.com/free-icons/gem" title="gem icons">Gem icons created by Freepik - Flaticon</a>
