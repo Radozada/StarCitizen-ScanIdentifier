@@ -54,7 +54,7 @@ This project requires the following dependencies:
      ![Drag and Resize Scan Area](https://github.com/user-attachments/assets/924da0f5-99bb-4cb7-bc42-6bcbffff22cf)
    - Move the Scan Area preview over the screen where the Radar Signature pops up.
 
-     ![Scan Area in Position](https://github.com/user-attachments/assets/b0e2ac18-fcb1-40b8-8513-73c46cee7d53)
+     ![Scan Area in Position](https://github.com/user-attachments/assets/d6a436f2-e90b-417c-b38a-8d3c718fba77)
    - This section moves depending on the ship so you want to make sure if the scans aren't working, that it's in the right location.
    - Click on the Faded Scan Area Preview Icon in the upper right corner of the "Scan Area of Screen" section to hide the Scan Area preview.
 
@@ -76,6 +76,8 @@ This project is licensed under the MIT License. See the [LICENSE](https://github
 
 ## Credits
 Developer: Jonathan Alvarado
+
+Special Thanks: Josh Norton for feedback during the creation
 
 ## Attributions
 - <a href="https://www.flaticon.com/free-icons/gem" title="gem icons">Gem icons created by Freepik - Flaticon</a>
