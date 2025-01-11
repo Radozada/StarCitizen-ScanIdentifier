@@ -68,6 +68,7 @@ This project requires the following dependencies:
 ## View Results
    - Identified elements are displayed in the Results section.
    - Previous searches are saved for future reference.
+     
      ![Results Section](https://github.com/user-attachments/assets/31849708-c15b-4ea7-b6c8-35c60b405f2f)   
 
 ## License
