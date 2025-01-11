@@ -116,7 +116,7 @@ class ScanWindow(QWidget):
         
         self.options_radio_button_ground_mining = QRadioButton("Ground Mining")
         self.options_radio_button_ground_mining.setChecked(True)
-        self.options_radio_button_asteroid_mining = QRadioButton("Asteroid Mining")
+        self.options_radio_button_asteroid_mining = QRadioButton("Asteroid Mining / Salvaging")
 
         self.options_radio_button_asteroid_mining.clicked.connect(self.update_results_key)
         self.options_radio_button_ground_mining.clicked.connect(self.update_results_key)
@@ -197,18 +197,18 @@ class ScanWindow(QWidget):
         result_groupbox.setStyleSheet("QGroupBox { font-size: 14px; }")
         self.result_layout = QVBoxLayout()
         
-        self.results_widget = QLabel("Ready to go")
-        self.results_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        #self.results_widget = QLabel("Ready to go")
+        #self.results_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setup_asteroid_results_view()
         self.setup_ground_results_view()
-        self.result_layout.addWidget(self.results_widget)
+        #self.result_layout.addWidget(self.results_widget)
         result_groupbox.setLayout(self.result_layout)
 
         # HISTORY SECTION
-        history_groupbox = QGroupBox("History", self)
-        history_groupbox.setMaximumWidth(400)
-        history_groupbox.setMinimumWidth(400)
-        history_groupbox.setStyleSheet("QGroupBox { font-size: 14px; }")
+        #history_groupbox = QGroupBox("History", self)
+        #history_groupbox.setMaximumWidth(400)
+        #history_groupbox.setMinimumWidth(400)
+        #history_groupbox.setStyleSheet("QGroupBox { font-size: 14px; }")
         history_layout = QVBoxLayout()
         
         # History Label
@@ -245,7 +245,9 @@ class ScanWindow(QWidget):
 
         history_layout.addLayout(history_top_section_layout)
         history_layout.addWidget(self.history_list)
-        history_groupbox.setLayout(history_layout)
+
+        self.result_layout.addLayout(history_layout)        
+        #history_groupbox.setLayout(history_layout)
 
         # Grid Layout
         grid_layout = QGridLayout() 
@@ -254,8 +256,8 @@ class ScanWindow(QWidget):
         grid_layout.addWidget(options_groupbox,  0, 0, 1, 1)
         grid_layout.addWidget(input_groupbox,    1, 0, 1, 1)
         grid_layout.addWidget(scan_groupbox,     2, 0, 1, 1)
-        grid_layout.addWidget(result_groupbox,   0, 1, 2, 1)
-        grid_layout.addWidget(history_groupbox,  2, 1, 1, 1)
+        grid_layout.addWidget(result_groupbox,   0, 1, 3, 1)
+        #grid_layout.addWidget(history_groupbox,  2, 1, 1, 1)
 
         self.setLayout(grid_layout)
 
@@ -290,8 +292,6 @@ class ScanWindow(QWidget):
         if selected_item is not None:
             clipboard = QApplication.clipboard()
             clipboard.setText(selected_item.item_text)
-        
-        
 
     def on_text_changed(self, text):
         '''Turns off the Search Button when there is no text in the search box'''
@@ -351,7 +351,7 @@ class ScanWindow(QWidget):
     def handle_scan_finished(self, scanned_text, matches):
         # Display results
         results = results_to_widget(scanned_text, matches)
-        self.update_results(results)
+        #self.update_results(results)
 
         # Add to history
         self.add_to_history(results)
@@ -535,12 +535,12 @@ class ScanWindow(QWidget):
         elif self.options_radio_button_asteroid_mining.isChecked():
             self.ground_results_key_groupbox.hide()
         
-    def update_results(self, results):
-        if self.results_widget:      
-            self.results_widget.deleteLater()
-            self.results_widget = None
-        self.results_widget = get_widget_item(results["time"], results["scanned_text"], results["matches"])
-        self.result_layout.addWidget(self.results_widget)
+    #def update_results(self, results):
+        #if self.results_widget:      
+        #    self.results_widget.deleteLater()
+        #    self.results_widget = None
+        #self.results_widget = get_widget_item(results["time"], results["scanned_text"], results["matches"])
+        #self.result_layout.addWidget(self.results_widget)
 
 import qdarkstyle
 

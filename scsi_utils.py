@@ -126,7 +126,7 @@ def find_matching_headers(database_file, table_name, value):
 def replace_gems_with_single_entry(results):
     gem_found = False
 
-    strings_to_remove = ["Aphorite", "Dolivine", "Hadanite", "Janalite"]
+    strings_to_remove = ["Aphorite (N)", "Dolivine (N)", "Hadanite (N)", "Janalite (N)"]
 
     filtered_results = []
     
@@ -148,7 +148,34 @@ def replace_gems_with_single_entry(results):
     
     filtered_results.sort()
 
-    results = filtered_results    
+    results = filtered_results
+
+    gem_found = False
+
+    strings_to_remove = ["Aphorite (L)", "Dolivine (L)", "Hadanite (L)", "Janalite (L)"]
+
+    filtered_results = []
+    
+    for header, nodes in results:      
+        if any(string in header for string in strings_to_remove):
+            gem_found = True
+            if "(N)" in header:
+                gem_size = "(N)"
+                gem_nodes = nodes
+            elif "(L)" in header:
+                gem_size = "(L)"
+                gem_nodes = nodes
+        else:
+            filtered_results.append((header,nodes))
+    
+    if gem_found:
+        s_gem = "Gems " 
+        filtered_results.append((str(s_gem + gem_size), str(gem_nodes)))
+    
+    filtered_results.sort()   
+
+    results = filtered_results
+
     return results
 
 from datetime import datetime
@@ -192,6 +219,8 @@ from PyQt6.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout
 from PyQt6.QtGui import QPixmap, QFontMetrics
 from PyQt6.QtCore import Qt
 
+GEMS_STACK_ICON   = "resources/gem_stack.png"         #ground mining
+GEM_APHORITE_ICON = "resources/gemstone_aphorite.png" #ground mining
 GEM_APHORITE_ICON = "resources/gemstone_aphorite.png" #ground mining
 GEM_DOLIVINE_ICON = "resources/gemstone_dolivine.png" #ground mining
 GEM_HADANITE_ICON = "resources/gemstone_hadanite.png" #ground mining
@@ -199,7 +228,7 @@ GEM_JANALITE_ICON = "resources/gemstone_janalite.png" #ground mining
 DEPOSIT_ICON      = "resources/stone.png"             #ground mining
 
 ASTEROID_TYPE_ICON = "resources/asteroid.png"         #asteroid mining
-SALVAGE_ICON = "resources/vulture.png"                #asteroid mining
+SALVAGE_ICON       = "resources/vulture.png"          #salvaging
 
 # Goal = 12:30:15PM GEM_ICON GEM_NAME [X Nodes] 
 class RadarSignatureListItem(QWidget):
@@ -225,11 +254,13 @@ class RadarSignatureListItem(QWidget):
             #self.add_to_element_string(time)
 
         # Search Label
+        # TODO: Add character wrapping potentially
         self.search_label = QLabel(search) 
-        self.search_label.setWordWrap(True)
         self.search_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.search_label.setStyleSheet("color: #37AEFE; font-weight: bold;") ##00d0d0
-        self.search_label.setFixedWidth(QFontMetrics(self.search_label.font()).horizontalAdvance(search) + 15)
+        self.search_label.setMaximumWidth(50)        
+        if QFontMetrics(self.search_label.font()).horizontalAdvance(search) + 15 < self.search_label.maximumWidth():
+            self.search_label.setFixedWidth(QFontMetrics(self.search_label.font()).horizontalAdvance(search) + 15)
         main_h_layout.addWidget(self.search_label)
         self.add_to_element_string("Search: " + search + " |")
 
@@ -258,11 +289,11 @@ class RadarSignatureListItem(QWidget):
                 self.add_to_element_string(" " + header)                
 
                 # Nodes Label (custom color)
-                self.nodes_label = QLabel(nodes + " Nodes")
+                self.nodes_label = QLabel(nodes + " " + self.assign_verbiage(header, nodes) )
                 self.nodes_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
                 self.nodes_label.setStyleSheet("color: #00FF00;")
                 #self.nodes_label.adjustSize()  
-                self.add_to_element_string(str(" " + nodes + " Nodes" + " |"))
+                self.add_to_element_string(str(" " + nodes + " " + self.assign_verbiage(header, nodes) + " |"))
 
                 # Horizontal Layout Setup
                 if icon_path:
@@ -281,7 +312,28 @@ class RadarSignatureListItem(QWidget):
 
     def add_to_element_string( self, new_text ):        
         self.item_text = self.item_text + new_text
+    
+    def assign_verbiage( self, header, nodes ):
+        '''Determines whether to call a things a rock, deposit, or node'''
 
+        node_string = ""
+
+        if "Type" in header:
+            node_string = "Asteroid"
+        elif "(N)" in header:
+            node_string = "Gemstone"
+        elif "(L)" in header:
+            node_string = "Node"
+        elif "Salvage" in header:
+            node_string = "Panel"
+        else:
+            node_string = "Deposit"
+        
+        # for multiple 
+        if int(nodes) > 1:
+            node_string = node_string + "s"
+
+        return node_string
 
 def assign_icon( header ):
     '''Determines what icon to assign based on the result'''
@@ -300,7 +352,10 @@ def assign_icon( header ):
     elif "Janalite" in header:
         icon_path = GEM_JANALITE_ICON
         #print("gemstone_janalite") 
-    elif "Gems" in header:
+    elif "Gems (N)" in header:
+        icon_path = GEMS_STACK_ICON
+        #print("gemstone_janalite") 
+    elif "Gems (L)" in header:
         icon_path = GEM_APHORITE_ICON
         #print("gemstone_janalite") 
     elif "Type" in header:
