@@ -16,7 +16,7 @@ A Python application for scanning and identifying Radar Signatures in Star Citiz
 
 # How to use
 
-## Download the [latest Radar Scan ID Release](https://github.com/Radozada/StarCitizen-ScanIdentifier/releases/download/v0.8.1-alpha/Radar_Scan_ID_v0.8.1.zip), and extract it to a destination of your choice.
+## Download the [latest Radar Scan ID Release](https://github.com/Radozada/StarCitizen-ScanIdentifier/releases/download/v0.8.1-alpha/Radar_ScanID_0.8.1.zip), and extract it to a destination of your choice.
 
 ## Launch Radar Scan ID Executable
  #### Set the database to search depending on what kind of mining you are doing
