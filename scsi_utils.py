@@ -1,11 +1,18 @@
-RECTANGLE_BOUNDS_FILE = "data/rectangle_bounds.json"
-
+from platformdirs import user_data_dir, user_log_dir, user_cache_dir
+from PyQt6.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout
+from PyQt6.QtGui import QPixmap, QFontMetrics
+from PyQt6.QtCore import Qt
 import pyautogui
+import json
+import sys
+import os
+
+RECTANGLE_BOUNDS_FILE = "data\\rectangle_bounds.json"
 
 def get_region_size():
     #Need this to be dynamic based on screen resolution
     region_width  = 200           # 0.0781250000000000 % of 2560
-    region_height = 40            # 0.0277777777777778 % of 1440
+    region_height = 50            # 0.0277777777777778 % of 1440
     region_height_offset = 190    # 0.1319444444444444 % of 1440
 
     screensize = pyautogui.size()
@@ -32,9 +39,6 @@ def get_region_size():
 
     return region
 
-import json
-import os
-
 # Handles getting the JSON credentials file path
 def load_json(filename):
     # Get the path to the JSON file inside the 'resources' directory
@@ -48,7 +52,7 @@ def load_rectangle_bounds():
     :return: A tuple (left, top, width, height) or None if no bounds are saved
     """
     try:
-        with open(RECTANGLE_BOUNDS_FILE, "r") as file:
+        with open(get_user_directory(RECTANGLE_BOUNDS_FILE), "r") as file:
             bounds_data = json.load(file)
             return (bounds_data["x"], bounds_data["y"], bounds_data["width"], bounds_data["height"])
     except FileNotFoundError:
@@ -67,7 +71,7 @@ def format_number_remove_comma(value):
         return str(number)
     except ValueError:
         # Handle the case where the value is not a valid number        
-        return "Invalid number"
+        return "Invalid"
 
 def clean_input_text(value):
     value = value.strip() #strip spaces
@@ -215,12 +219,7 @@ def get_widget_item(time, scanned_text, matches):
 
     return radar_search_widget
 
-from PyQt6.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout
-from PyQt6.QtGui import QPixmap, QFontMetrics
-from PyQt6.QtCore import Qt
-
 GEMS_STACK_ICON   = "resources/gem_stack.png"         #ground mining
-GEM_APHORITE_ICON = "resources/gemstone_aphorite.png" #ground mining
 GEM_APHORITE_ICON = "resources/gemstone_aphorite.png" #ground mining
 GEM_DOLIVINE_ICON = "resources/gemstone_dolivine.png" #ground mining
 GEM_HADANITE_ICON = "resources/gemstone_hadanite.png" #ground mining
@@ -341,34 +340,59 @@ def assign_icon( header ):
 
     # Set icon based on the result text
     if "Aphorite" in header:
-        icon_path = GEM_APHORITE_ICON
+        icon_path = resource_path(GEM_APHORITE_ICON)
         #print("gemstone_aphorite")
     elif "Dolivine" in header:
-        icon_path = GEM_DOLIVINE_ICON
+        icon_path = resource_path(GEM_DOLIVINE_ICON)
         #print("gemstone_dolivine")
     elif "Hadanite" in header:
-        icon_path = GEM_HADANITE_ICON
+        icon_path = resource_path(GEM_HADANITE_ICON)
         #print("gemstone_hadanite")
     elif "Janalite" in header:
-        icon_path = GEM_JANALITE_ICON
+        icon_path = resource_path(GEM_JANALITE_ICON)
         #print("gemstone_janalite") 
     elif "Gems (N)" in header:
-        icon_path = GEMS_STACK_ICON
+        icon_path = resource_path(GEMS_STACK_ICON)
         #print("gemstone_janalite") 
     elif "Gems (L)" in header:
-        icon_path = GEM_APHORITE_ICON
+        icon_path = resource_path(GEM_APHORITE_ICON)
         #print("gemstone_janalite") 
     elif "Type" in header:
-        icon_path = ASTEROID_TYPE_ICON
+        icon_path = resource_path(ASTEROID_TYPE_ICON)
         #print("asteroid") 
     elif "Salvage" in header:
-        icon_path = SALVAGE_ICON
+        icon_path = resource_path(SALVAGE_ICON)
         #print("salvage")
     else:
-        icon_path = DEPOSIT_ICON
+        icon_path = resource_path(DEPOSIT_ICON)
         #print("salvage")
 
     return icon_path
 
-#def create_results_key():
-#    print("dondidit")
+# For files in the resources folder - static
+def resource_path(relative_path):
+    """ Get absolute path to resource """
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
+
+__application_name__ = "Radar Scan ID"
+__company_name__     = "GoatCliffs"
+
+# For files in the data folder - modified during use
+def get_user_directory(INPUT_PATH):
+    # Get the user data directory for your application
+    data_dir = user_data_dir(__application_name__, __company_name__)
+
+    # Ensure the directory exists
+    os.makedirs(data_dir, exist_ok=True)
+
+    # Define the file path
+    file_path = os.path.join(data_dir, INPUT_PATH)
+
+    #Ensure nested directories exist
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    print(f"File will be saved at: {file_path}")
+
+    return file_path

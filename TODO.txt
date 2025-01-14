@@ -3,12 +3,12 @@ TODO
 IMPORTANT, URGENT
 - Test the Tesseract integration on other PC's
 
-
 IMPORTANT, NOT URGENT
-- 
+- Track the Radar Signature icon and set the Scan Area based on its location
+- Improve the image parsing capabilities
 
 NOT IMPORTANT, NOT URGENT
-- Global Style Sheet, visual upgrade
+- 
 
 WISHLIST
 - Fred is cleaning an eye icon on the ground, it'll be hilarious. (tome)

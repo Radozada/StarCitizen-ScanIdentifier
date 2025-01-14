@@ -1,22 +1,30 @@
 import sys
 import json
 import ctypes
-from PyQt6.QtWidgets import QApplication, QMenu, QToolTip, QRadioButton, QLabel, QVBoxLayout, QPushButton, QWidget, QListWidget, QHBoxLayout, QLineEdit, QGroupBox, QGridLayout, QListWidgetItem
+from PyQt6.QtWidgets import QApplication, QMenu, QToolTip, QRadioButton, QLabel, QVBoxLayout, QPushButton, QWidget, QListWidget, QHBoxLayout, QLineEdit, QGroupBox, QGridLayout, QListWidgetItem, QSizePolicy
 from PyQt6.QtGui import QMovie, QIcon, QFont, QPixmap, QFontMetrics, QKeySequence
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from scsi_ocr_scanner import capture_screen, process_image
-from scsi_utils import get_region_size, load_rectangle_bounds, clean_input_text, find_matching_headers, results_to_widget, get_widget_item, assign_icon
-
+from scsi_utils import get_region_size, load_rectangle_bounds, clean_input_text, find_matching_headers, results_to_widget, get_widget_item, assign_icon, resource_path, get_user_directory
 from scsi_search_area_overlay import OverlayRectangle
 
-HISTORY_FILE = "data/scan_history.json"
-DATABASE_FILE = "data/scsi_database.db"
+__application_name__ = "Radar Scan ID"
+__copyright__        = "© 2025 GoatCliffs. All rights reserved."
+__version__          = "0.8.1"
+
 GROUND_MINERALS_TABLE_NAME = "GROUND_MINERALS"
-ASTEROIDS_TABLE_NAME = "ASTEROID_TYPES"
-SCREENSHOT_PATH = "data/screenshot.png"
-WINDOW_ICON = "resources/scsi_tool.ico"
-SCAN_AREA_ACTIVE_ICON = "resources/area_settings_active_icon_128.png"
-SCAN_AREA_ICON = "resources/area_settings_icon_128.png"
+ASTEROIDS_TABLE_NAME       = "ASTEROID_TYPES"
+DATABASE_FILE              = "resources\\scsi_database.db"
+
+HISTORY_FILE               = "data\\scan_history.json"
+SCREENSHOT_PATH            = "data\\screenshot.png"
+
+WINDOW_ICON                = "resources/scsi_tool.ico"
+SCAN_AREA_ACTIVE_ICON      = "resources/area_settings_active_icon_128.png"
+SCAN_AREA_ICON             = "resources/area_settings_icon_128.png"
+FRED_STATUS                = "resources/fred-fred-mopping_200.gif"
+READY_STATUS               = "resources/ready_to_scan_200.gif"
+SCANNING_STATUS            = "resources/scanning_200.gif"
 
 class ScanWorker(QThread):
     # Define custom signals for passing results back to the UI
@@ -36,6 +44,7 @@ class ScanWorker(QThread):
         if not self.region:
             # Fallback to a default region if no saved bounds exist
             self.region = (0, 0, 800, 600)
+            print("Using Fallback Bounds")
 
     def run(self):
         if self.scanner_used:
@@ -53,7 +62,7 @@ class ScanWorker(QThread):
         else:
             TABLE_NAME = ASTEROIDS_TABLE_NAME
        
-        matches = find_matching_headers( DATABASE_FILE, TABLE_NAME, scanned_text)  
+        matches = find_matching_headers(resource_path(DATABASE_FILE), TABLE_NAME, scanned_text)  
 
         # Emit the results when finished
         self.scan_finished.emit(scanned_text, matches)
@@ -64,7 +73,7 @@ class ScanWindow(QWidget):
 
         # Screen region settings
         self.region = get_region_size()  # Adjust the region size
-        self.screenshot_path = SCREENSHOT_PATH
+        self.screenshot_path = get_user_directory(SCREENSHOT_PATH)
 
         # History
         self.history = []
@@ -83,10 +92,10 @@ class ScanWindow(QWidget):
 
     def init_ui(self):
         # Set up the window
-        self.setWindowTitle("Radar Scan ID v0.8")
-        self.setWindowIcon(QIcon(WINDOW_ICON))
-        self.setGeometry(100, 100, 800, 500)  # Window size
-        self.setFixedSize(800, 500)  # Fixed size window
+        self.setWindowTitle(__application_name__)
+        self.setWindowIcon(QIcon(resource_path(WINDOW_ICON)))
+        #self.setGeometry(100, 100, 800, 500)  # Window size
+        self.setFixedSize(800, 540)  # Fixed size window
 
         #Dark Top Window Bar
         hwnd = int(self.winId())
@@ -166,7 +175,7 @@ class ScanWindow(QWidget):
         self.toggle_scan_area_button = QPushButton("", self)
         self.toggle_scan_area_button.setFixedWidth(25)
         self.toggle_scan_area_button.setStyleSheet("QPushButton { background-color: transparent; border: none;}")
-        self.toggle_scan_area_button.setIcon(QIcon("resources/area_settings_icon_128.png"))
+        self.toggle_scan_area_button.setIcon(QIcon(resource_path(SCAN_AREA_ICON)))
         self.toggle_scan_area_button.setToolTip("Move, or resize scan area.")
         self.toggle_scan_area_button.setCheckable(True)
         self.toggle_scan_area_button.clicked.connect(self.toggle_scan_area)
@@ -221,6 +230,7 @@ class ScanWindow(QWidget):
 
         #History Label and Scan Area Button Layout
         history_top_section_layout = QHBoxLayout()
+        #history_top_section_layout.addStretch()
         history_top_section_layout.addWidget(history_label)
         history_top_section_layout.addWidget(history_clear_button)
 
@@ -246,19 +256,37 @@ class ScanWindow(QWidget):
         history_layout.addLayout(history_top_section_layout)
         history_layout.addWidget(self.history_list)
 
-        self.result_layout.addLayout(history_layout)        
-        #history_groupbox.setLayout(history_layout)
+        self.result_layout.addLayout(history_layout)
+
+        # Version Label
+        version_label = QLabel(__application_name__ + " " + __version__)        
+        version_label.setToolTip(__copyright__)        
+        version_label.setStyleSheet("""
+            QLabel {
+                color: #54687A;
+            }
+            QLabel:hover {
+                color: #37AEFE;
+            }
+        """)
+
+        version_layout = QHBoxLayout()
+        version_layout.addStretch()
+        version_layout.addWidget(version_label)
 
         # Grid Layout
         grid_layout = QGridLayout() 
+
+        scan_groupbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         # Add all sections to the grid layout
         grid_layout.addWidget(options_groupbox,  0, 0, 1, 1)
         grid_layout.addWidget(input_groupbox,    1, 0, 1, 1)
         grid_layout.addWidget(scan_groupbox,     2, 0, 1, 1)
         grid_layout.addWidget(result_groupbox,   0, 1, 3, 1)
+        grid_layout.addLayout(version_layout,    3, 1, 1, 1 )
         #grid_layout.addWidget(history_groupbox,  2, 1, 1, 1)
-
+        
         self.setLayout(grid_layout)
 
     def show_history_context_menu(self, position):
@@ -323,12 +351,12 @@ class ScanWindow(QWidget):
             # Create and show the rectangle
             self.overlay_rectangle = OverlayRectangle( loc_x, loc_y, width, height )
             self.overlay_rectangle.show()
-            self.toggle_scan_area_button.setIcon(QIcon(SCAN_AREA_ACTIVE_ICON))
+            self.toggle_scan_area_button.setIcon(QIcon(resource_path(SCAN_AREA_ACTIVE_ICON)))
         else:
              # If the rectangle already exists, toggle it off
             self.overlay_rectangle.close()
             self.overlay_rectangle = None            
-            self.toggle_scan_area_button.setIcon(QIcon(SCAN_AREA_ICON))
+            self.toggle_scan_area_button.setIcon(QIcon(resource_path(SCAN_AREA_ICON)))
 
     def start_scan(self):
         # Disable the scan buttons during the scan
@@ -401,7 +429,7 @@ class ScanWindow(QWidget):
 
     def load_history(self):
         try:
-            with open(HISTORY_FILE, "r") as file:
+            with open(get_user_directory(HISTORY_FILE), "r") as file:
                 self.history = json.load(file)
                 for entry in self.history:
                     time = entry["time"]
@@ -418,16 +446,16 @@ class ScanWindow(QWidget):
         except FileNotFoundError:
             # No history file exists yet
             self.history = []
-            with open(HISTORY_FILE, "w") as file:
+            with open(get_user_directory(HISTORY_FILE), "w") as file:
                 json.dump(self.history, file)
 
     def save_history(self):
-        with open(HISTORY_FILE, "w") as file:
+        with open(get_user_directory(HISTORY_FILE), "w") as file:
             json.dump(self.history, file, indent=4)
 
     def clear_history(self):
         self.history = []
-        with open(HISTORY_FILE, "w") as file:
+        with open(get_user_directory(HISTORY_FILE), "w") as file:
                 json.dump(self.history, file)
 
         self.history_list.clear()
@@ -443,9 +471,9 @@ class ScanWindow(QWidget):
         :param state: "fred", "ready", "scanning"
         """
         gif_paths = {
-            "fred": "resources/fred-fred-mopping_200.gif",
-            "ready": "resources/ready_to_scan_200.gif",
-            "scanning": "resources/scanning_200.gif",
+            "fred":     resource_path(FRED_STATUS),
+            "ready":    resource_path(READY_STATUS),
+            "scanning": resource_path(SCANNING_STATUS),
         }
 
         if self.status_image_state != state:
